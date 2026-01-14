@@ -1,0 +1,14 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  padding: 0;
+  margin: 0 auto;
+  background-color: #fff;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  touch-action: manipulation;
+}
