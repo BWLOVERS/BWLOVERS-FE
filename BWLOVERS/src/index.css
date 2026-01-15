@@ -209,7 +209,7 @@ a {
   text-decoration: none;
 }
 a:hover {
-  color: #8ad201;
+  color: #ff92ab;
 }
 
 body {
@@ -235,6 +235,6 @@ button {
     background-color: #ffffff;
   }
   a:hover {
-    color: #8ad201;
+    color: #ff92ab;
   }
 }
