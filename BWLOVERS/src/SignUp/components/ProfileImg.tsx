@@ -28,7 +28,6 @@ export default function ProfileImg({
 
   return (
     <div className="group relative mb-[2.13rem] h-28 w-28 overflow-hidden rounded-full bg-white">
-      {/* 프로필 이미지 */}
       {imageUrl ? (
         <img src={imageUrl} alt={alt} className="h-full w-full object-cover" />
       ) : (
@@ -37,7 +36,7 @@ export default function ProfileImg({
         </div>
       )}
 
-      {/* hover 시 나타나는 오버레이 */}
+      {/* hover 오버레이 */}
       <button
         type="button"
         onClick={handleClick}
@@ -47,7 +46,7 @@ export default function ProfileImg({
         <CameraIcon className="h-7.5 w-7.5" />
       </button>
 
-      {/* 실제 파일 input (숨김) */}
+      {/* 실제 파일 input */}
       <input
         ref={fileInputRef}
         type="file"

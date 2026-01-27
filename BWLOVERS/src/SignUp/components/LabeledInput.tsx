@@ -4,11 +4,11 @@ type LabeledInputProps = {
   label: string;
   value: string;
   onChange?: (value: string) => void;
-
   placeholder?: string;
   disabled?: boolean;
-
+  inError?: boolean;
   maxLength?: number; // 있으면 카운터 표시
+  type?: React.HTMLInputTypeAttribute;
 };
 
 export default function LabeledInput({
@@ -17,7 +17,9 @@ export default function LabeledInput({
   onChange,
   placeholder,
   disabled = false,
-  maxLength
+  inError = false,
+  maxLength,
+  type = 'text'
 }: LabeledInputProps) {
   const inputId = useId();
   const [isFocused, setIsFocused] = useState(false);
@@ -27,9 +29,11 @@ export default function LabeledInput({
 
   const borderClassName = disabled
     ? 'border-gray-20 bg-gray-10'
-    : isFocused
-      ? 'border-pink-60'
-      : 'border-gray-20';
+    : inError
+      ? 'border-warning-100 shadow-[0_0_4px_0_rgba(255,0,0,0.3)]'
+      : isFocused
+        ? 'border-pink-60'
+        : 'border-gray-20';
 
   const textClassName = disabled ? 'text-gray-60' : 'text-black';
 
@@ -53,15 +57,16 @@ export default function LabeledInput({
       </label>
 
       <div
-        className={`flex w-full items-center justify-between self-stretch rounded-[0.625rem] border px-[1.125rem] py-3 ${borderClassName}`}
+        className={`flex w-full items-center justify-between self-stretch rounded-[0.625rem] border px-4.5 py-3 ${borderClassName}`}
       >
         <input
           id={inputId}
           value={value}
+          type={type}
           onChange={handleChange}
           placeholder={placeholder}
           disabled={disabled}
-          className={`w-full bg-transparent text-body-sm outline-none ${textClassName}`}
+          className={`w-full bg-transparent text-body-sm outline-none placeholder:text-caption-md placeholder:text-gray-40 ${textClassName}`}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
         />
