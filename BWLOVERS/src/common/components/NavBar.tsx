@@ -30,8 +30,8 @@ export default function NavBar() {
   };
 
   return (
-    <nav className="absolute right-0 bottom-0 left-0 z-50 flex justify-center">
-      <div className="relative w-full">
+    <nav className="fixed right-0 bottom-0 left-0 z-50 flex justify-center">
+      <div className="relative w-full max-w-[480px]">
         {/* 가운데 원 버튼 */}
         <button
           type="button"

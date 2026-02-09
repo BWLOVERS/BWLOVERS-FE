@@ -70,9 +70,10 @@ export default function SignUpAccount() {
           onClick={handleNext}
         />
       </div>
-
-      <div className="relative">
-        <ProgressBar currentStep={1} />
+      <div className="sticky bottom-0 z-50">
+        <div className="relative">
+          <ProgressBar currentStep={1} />
+        </div>
       </div>
     </>
   );

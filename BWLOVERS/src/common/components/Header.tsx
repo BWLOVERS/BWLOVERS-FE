@@ -22,8 +22,8 @@ export default function Header({
   };
 
   return (
-    <div className="grid h-18.25 w-full grid-cols-3 pt-5.25 pb-3">
-      <div className="flex items-center justify-start pl-7">
+    <div className="sticky top-0 z-50 grid h-18.25 w-full grid-cols-3 bg-white pt-5.25 pb-3">
+      <div className="flex cursor-pointer items-center justify-start pl-7">
         {showBack && <BackwardIcon className="h-6 w-6" onClick={handleBack} />}
       </div>
       <div className="flex items-center justify-center text-heading-sm text-black">

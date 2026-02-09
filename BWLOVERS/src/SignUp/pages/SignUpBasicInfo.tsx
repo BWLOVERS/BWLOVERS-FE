@@ -13,7 +13,7 @@ import type {
 } from '../types/signupBasicInfo';
 import { onlyDigits, sliceTo8Digits } from '../utils/inputUtils';
 import { mergeBasicInfoState } from '../utils/routeState';
-import { getBasicInfoValidation } from '../utils/basicInfoVaildation';
+import { getBasicInfoValidation } from '../utils/basicInfoValidation';
 
 export default function SignUpBasicInfo() {
   const navigate = useNavigate();
@@ -232,7 +232,7 @@ export default function SignUpBasicInfo() {
         </div>
       </main>
 
-      <div className="flex w-full justify-between px-11.5 pb-9.75">
+      <div className="flex w-full justify-between bg-white px-11.5 pb-9.75">
         <ActionButton
           label="<- 이전"
           variant="secondary"
@@ -245,9 +245,10 @@ export default function SignUpBasicInfo() {
           disabled={!isAllRequiredFilled}
         />
       </div>
-
-      <div className="relative">
-        <ProgressBar currentStep={2} />
+      <div className="sticky bottom-0 z-50">
+        <div className="relative">
+          <ProgressBar currentStep={2} />
+        </div>
       </div>
     </>
   );

@@ -4,7 +4,7 @@ import Dropdown from '../components/Dropdown';
 import DropdownMenuList from '../components/DropdownMenulist';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import jobList from '@/assets/data/job_list.json';
+import jobList from '@/SignUp/data/job_list.json';
 import type { SignUpBasicInfoState } from '../types/signupBasicInfo';
 import { mergeBasicInfoState } from '../utils/routeState';
 
@@ -34,7 +34,7 @@ export default function JobSelect() {
   const [middleValue, setMiddleValue] = useState<string | undefined>();
   const [smallValue, setSmallValue] = useState<string | undefined>();
 
-  // ✅ 기존에 직업이 이미 입력돼 있었다면, 세분류 input에 보여주고 싶을 때
+  // 기존에 직업이 이미 입력돼 있었다면, 세분류 input에 보여주고 싶을 때
   const [detailValue, setDetailValue] = useState<string | undefined>(
     incomingState?.job
   );
@@ -133,7 +133,7 @@ export default function JobSelect() {
     <>
       <Header title="직업 선택" showBack={true} />
 
-      <main className="mx-[3.1rem] mt-25 mb-1.5 flex flex-1 flex-col gap-7">
+      <main className="mx-[3.1rem] mt-28 mb-1.5 flex flex-1 flex-col gap-7">
         {/* 대분류 */}
         <div ref={majorRef} className="relative w-full">
           <Dropdown
