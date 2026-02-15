@@ -126,7 +126,7 @@ export default function SignUpBasicInfo() {
   };
 
   const handleJobSearch = () => {
-    navigate('/signup/info/job', {
+    navigate('/jobs', {
       state: mergeBasicInfoState(incomingState, currentFormState)
     });
   };

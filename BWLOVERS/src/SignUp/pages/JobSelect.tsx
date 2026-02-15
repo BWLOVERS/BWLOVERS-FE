@@ -20,11 +20,17 @@ const getLabels = (nodes?: JobNode[]) =>
 const findNode = (nodes: JobNode[], label?: string) =>
   label ? nodes.find((n) => n.label === label) : undefined;
 
+type JobSelectRouteState = SignUpBasicInfoState & {
+  returnTo?: string;
+};
+
 export default function JobSelect() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const incomingState = (location.state as SignUpBasicInfoState | null) ?? null;
+  const incomingState = (location.state as JobSelectRouteState | null) ?? null;
+
+  const returnTo = incomingState?.returnTo ?? '/signup/info';
 
   const [openKey, setOpenKey] = useState<
     'major' | 'middle' | 'small' | 'detail' | null
@@ -34,10 +40,7 @@ export default function JobSelect() {
   const [middleValue, setMiddleValue] = useState<string | undefined>();
   const [smallValue, setSmallValue] = useState<string | undefined>();
 
-  // 기존에 직업이 이미 입력돼 있었다면, 세분류 input에 보여주고 싶을 때
-  const [detailValue, setDetailValue] = useState<string | undefined>(
-    incomingState?.job
-  );
+  const [detailValue, setDetailValue] = useState<string | undefined>(undefined);
 
   const majorRef = useRef<HTMLDivElement | null>(null);
   const middleRef = useRef<HTMLDivElement | null>(null);
@@ -87,13 +90,12 @@ export default function JobSelect() {
   }, [openKey]);
 
   const majorOptions = useMemo(() => getLabels(data), []);
-
   const majorNode = useMemo(() => findNode(data, majorValue), [majorValue]);
+
   const middleOptions = useMemo(
     () => getLabels(majorNode?.children),
     [majorNode]
   );
-
   const middleNode = useMemo(
     () =>
       majorNode?.children
@@ -101,11 +103,11 @@ export default function JobSelect() {
         : undefined,
     [majorNode, middleValue]
   );
+
   const smallOptions = useMemo(
     () => getLabels(middleNode?.children),
     [middleNode]
   );
-
   const smallNode = useMemo(
     () =>
       middleNode?.children
@@ -113,6 +115,7 @@ export default function JobSelect() {
         : undefined,
     [middleNode, smallValue]
   );
+
   const detailOptions = useMemo(
     () => getLabels(smallNode?.children),
     [smallNode]
@@ -123,15 +126,19 @@ export default function JobSelect() {
   const handleComplete = () => {
     if (!detailValue) return;
 
-    navigate('/signup/info', {
+    navigate(returnTo, {
       state: mergeBasicInfoState(incomingState, { job: detailValue }),
       replace: true
     });
   };
 
+  const handleBack = () => {
+    navigate(returnTo, { state: incomingState ?? undefined, replace: true });
+  };
+
   return (
     <>
-      <Header title="직업 선택" showBack={true} />
+      <Header title="직업 선택" showBack={true} onBack={handleBack} />
 
       <main className="mx-[3.1rem] mt-28 mb-1.5 flex flex-1 flex-col gap-7">
         {/* 대분류 */}
