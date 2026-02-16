@@ -13,6 +13,7 @@ import RecommendResultDetail from './Insurance/pages/RecommendResultDetail';
 import EditProfile from './Home/pages/EditProfile';
 import ExplainUpload from './Insurance/pages/ExplainUpload';
 import MyInsuranceList from './Home/pages/MyInsuranceList';
+import Loading from './Insurance/pages/Loading';
 const router = createBrowserRouter([
   {
     element: <MainLayout />,
@@ -36,7 +37,8 @@ const router = createBrowserRouter([
       },
       { path: '/insurance/explain/upload', element: <ExplainUpload /> },
 
-      { path: '/about', element: <AboutUs /> }
+      { path: '/about', element: <AboutUs /> },
+      { path: '/loading', element: <Loading /> }
     ]
   }
 ]);
