@@ -14,11 +14,14 @@ import EditProfile from './Home/pages/EditProfile';
 import ExplainUpload from './Insurance/pages/ExplainUpload';
 import MyInsuranceList from './Home/pages/MyInsuranceList';
 import Loading from './Insurance/pages/Loading';
+import MyInsuranceDetail from './Home/pages/MyInsuranceDetail';
+import NaverCallback from './Login/pages/NaverCallback';
 const router = createBrowserRouter([
   {
     element: <MainLayout />,
     children: [
       { path: '/', element: <Login /> },
+      { path: '/auth/redirect/naver', element: <NaverCallback /> },
       {
         path: '/signup/account',
         element: <SignUpAccount />
@@ -27,7 +30,8 @@ const router = createBrowserRouter([
       { path: '/jobs', element: <JobSelect /> },
       { path: '/signup/health', element: <SignUpHealth /> },
       { path: '/home', element: <Home /> },
-      { path: '/MyInsurance', element: <MyInsuranceList /> },
+      { path: '/myinsurance', element: <MyInsuranceList /> },
+      { path: '/myinsurance/detail', element: <MyInsuranceDetail /> },
       { path: '/profile/edit', element: <EditProfile /> },
       { path: '/insurance', element: <InsuranceMain /> },
       { path: '/insurance/recommend/result', element: <RecommendResult /> },
