@@ -7,20 +7,42 @@ import SignUpHealth from './SignUp/pages/SignUpHealth';
 import InsuranceMain from './Insurance/pages/InsuranceMain';
 import Home from './Home/pages/Home';
 import JobSelect from './SignUp/pages/JobSelect';
+import AboutUs from './AboutUs/pages/AboutUs';
+import RecommendResult from './Insurance/pages/RecommendResult';
+import RecommendResultDetail from './Insurance/pages/RecommendResultDetail';
+import EditProfile from './Home/pages/EditProfile';
+import ExplainUpload from './Insurance/pages/ExplainUpload';
+import MyInsuranceList from './Home/pages/MyInsuranceList';
+import Loading from './Insurance/pages/Loading';
+import MyInsuranceDetail from './Home/pages/MyInsuranceDetail';
+import NaverCallback from './Login/pages/NaverCallback';
 const router = createBrowserRouter([
   {
     element: <MainLayout />,
     children: [
       { path: '/', element: <Login /> },
+      { path: '/auth/redirect/naver', element: <NaverCallback /> },
       {
         path: '/signup/account',
         element: <SignUpAccount />
       },
       { path: '/signup/info', element: <SignUpBasicInfo /> },
-      { path: '/signup/info/job', element: <JobSelect /> },
+      { path: '/jobs', element: <JobSelect /> },
       { path: '/signup/health', element: <SignUpHealth /> },
       { path: '/home', element: <Home /> },
-      { path: '/insurance', element: <InsuranceMain /> }
+      { path: '/myinsurance', element: <MyInsuranceList /> },
+      { path: '/myinsurance/detail', element: <MyInsuranceDetail /> },
+      { path: '/profile/edit', element: <EditProfile /> },
+      { path: '/insurance', element: <InsuranceMain /> },
+      { path: '/insurance/recommend/result', element: <RecommendResult /> },
+      {
+        path: '/insurance/recommend/result/detail',
+        element: <RecommendResultDetail />
+      },
+      { path: '/insurance/explain/upload', element: <ExplainUpload /> },
+
+      { path: '/about', element: <AboutUs /> },
+      { path: '/loading', element: <Loading /> }
     ]
   }
 ]);
