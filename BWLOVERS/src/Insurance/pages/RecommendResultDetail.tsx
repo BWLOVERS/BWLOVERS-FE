@@ -2,13 +2,13 @@ import { useState } from 'react';
 import Header from '@/common/components/Header';
 import InsuranceCard from '../components/InsuranceCard';
 import SpecialContractsSection from '../components/SpecialContractsSection';
-import { useSearchParams } from 'react-router-dom';
-import { recommendDetailDummy } from '../mocks/RecommendDetailDummy';
+//import { useSearchParams } from 'react-router-dom';
+import { recommendDetailDummy } from '@/Insurance/mocks/recommendDetailDummy';
 import SaveResultModal from '../components/SaveResultModal';
 
 export default function RecommendResultDetail() {
-  const [searchParams] = useSearchParams();
-  const itemId = searchParams.get('itemId'); // api 연결 시 사용
+  //const [searchParams] = useSearchParams();
+  //const itemId = searchParams.get('itemId'); // api 연결 시 사용
 
   const data = recommendDetailDummy;
   const [open, setOpen] = useState(false);

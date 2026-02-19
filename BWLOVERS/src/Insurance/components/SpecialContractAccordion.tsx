@@ -29,7 +29,7 @@ export default function SpecialContractAccordion({
   }, [contract.key_features]);
 
   return (
-    <section className="rounded-[1rem] bg-[#f7f7f7]">
+    <section className="rounded-2xl bg-[#f7f7f7]">
       {/* title */}
       <button
         type="button"

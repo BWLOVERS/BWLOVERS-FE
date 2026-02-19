@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import Header from '@/common/components/Header';
 import NavBar from '@/common/components/NavBar';
 import TabSelector from '../components/TabSelector';
@@ -20,19 +20,6 @@ const INSURANCE_TABS: readonly {
 
 export default function InsuranceMain() {
   const [activeTab, setActiveTab] = useState<InsuranceTabKey>('recommendation');
-
-  // const content = useMemo(() => {
-  //   switch (activeTab) {
-  //     case 'recommendation':
-  //       return <RecommendationTab />;
-  //     case 'coverage':
-  //       return <CoverageTab />;
-  //     case 'education':
-  //       return <EducationTab />;
-  //     default:
-  //       return null;
-  //   }
-  // }, [activeTab]);
 
   return (
     <>

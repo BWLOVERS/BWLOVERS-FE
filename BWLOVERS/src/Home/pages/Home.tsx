@@ -6,7 +6,7 @@ import HomeProfileImg from '../components/HomeProfileImg';
 import SavedInsurance from '../components/SavedInsurance';
 import SavedReport from '../components/SavedReport';
 import HomeMenuItem from '../components/HomeMenuItem';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export default function Home() {
   const user = '봉원이지롱';
@@ -33,7 +33,10 @@ export default function Home() {
         <div className="mx-[1.81rem] mt-24 flex flex-col gap-4.75">
           <div className="flex flex-row items-center justify-between">
             <div className="text-heading-sm text-black">내가 저장한 보험</div>
-            <div className="flex flex-row items-center rounded-full pl-2 text-body-xs text-gray-80 hover:bg-gray-10">
+            <div
+              onClick={() => navigate('/myinsurance')}
+              className="flex flex-row items-center rounded-full pl-2 text-body-xs text-gray-80 hover:bg-gray-10"
+            >
               더보기
               <ForwardIcon className="h-5 w-5" />
             </div>
@@ -61,7 +64,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="mx-5 my-[1.44rem] h-[0.0625rem] bg-gray-20" />
+        <div className="mx-5 my-[1.44rem] h-px bg-gray-20" />
 
         <div className="mx-[1.185rem] mb-24 flex flex-col gap-[0.88rem]">
           <div className="ml-2.5 text-heading-sm text-black">기타</div>

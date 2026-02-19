@@ -77,14 +77,14 @@ export default function RecommendResult() {
 
   return (
     <>
-      <div className="sticky top-0 z-50 bg-gradient-to-b from-white from-92% to-transparent">
+      <div className="sticky top-0 z-50 bg-linear-to-b from-white from-92% to-transparent">
         <Header title="추천 결과" />
         <div className="mb-4 flex flex-row items-start gap-2 px-[1.7rem]">
           <button
             ref={buttonRef}
             type="button"
             onClick={handleToggleFilter}
-            className="relative z-120 flex shrink-0 flex-row items-center gap-1 rounded-[0.5rem] border border-gray-20 bg-white px-2 py-1 text-body-sm text-black hover:bg-gray-20"
+            className="relative z-120 flex shrink-0 flex-row items-center gap-1 rounded-lg border border-gray-20 bg-white px-2 py-1 text-body-sm text-black hover:bg-gray-20"
           >
             <FilterIcon className="h-3.5 w-3.5" />
             필터 설정

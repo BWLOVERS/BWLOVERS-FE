@@ -48,7 +48,7 @@ export default function SaveResultModal({
 
   return (
     <div
-      className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 px-6"
+      className="fixed inset-0 z-999 flex items-center justify-center bg-black/40 px-6"
       aria-modal="true"
       role="dialog"
       onClick={onClose}

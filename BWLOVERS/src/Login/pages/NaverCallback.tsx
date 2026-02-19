@@ -59,8 +59,15 @@ export default function NaverCallback() {
   }, [navigate]);
 
   return (
-    <div className="flex flex-1 items-center justify-center">
-      로그인 처리 중...
+    <div className="mb-30 flex flex-1 flex-col items-center justify-center gap-8">
+      <div className="flex items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-pink-60" />
+      </div>
+
+      <div className="text-center text-body-lg text-black">
+        로그인 처리 중 ... <br />
+        잠시만 기다려 주세요.
+      </div>
     </div>
   );
 }
