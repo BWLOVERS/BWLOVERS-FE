@@ -2,13 +2,13 @@ export type ToggleValue = 'yes' | 'no' | null;
 
 export type SignUpBasicInfoState = {
   birthDate?: string;
-  job?: string;
+  jobName?: string; // ✅ job -> jobName
   expectedDate?: string;
   height?: string;
   weightPre?: string;
   weightCurrent?: string;
   gestationalWeek?: string;
-  isMultiple?: ToggleValue;
+  isMultiplePregnancy?: ToggleValue; // ✅ isMultiple -> isMultiplePregnancy
   miscarriageHistory?: ToggleValue;
   isFirstbirth?: ToggleValue;
   miscarriageCount?: string;

@@ -44,7 +44,7 @@ export const FORM_CONFIG: HealthFormConfig = {
         diseases: ['임신성 당뇨', '임신성 고혈압', '임신중독증']
       },
       { title: '조산·위험 임신', diseases: ['조기진통', '조산 위험'] },
-      { title: '태반·양수 이상', diseases: ['전치태반', '양수과다 / 과소'] },
+      { title: '태반·양수 이상', diseases: ['전치태반', '양수 과다/과소'] },
       {
         title: '태아 관련 소견',
         diseases: ['태아 성장 지연', '선천적 이상 소견']
