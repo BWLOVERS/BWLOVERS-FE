@@ -8,7 +8,7 @@ import NumberInput from '../components/NumberInput';
 import JobInput from '../components/JobInput';
 import ToggleInput from '../components/ToggleInput';
 import { onlyDigits, sliceTo8Digits } from '../utils/inputUtils';
-import { getBasicInfoValidation } from '../utils/basicInfoValidation';
+import { getBasicInfoValidationFromDraft } from '../utils/basicInfoValidation';
 import { usePregnancyInfoStore } from '@/stores/pregnancyInfoStore';
 import { pregnancyInfoApi } from '@/apis/users/pregnancyInfoApi';
 
@@ -58,7 +58,7 @@ export default function SignUpBasicInfo() {
   );
 
   const { errors, hasError, isAllRequiredFilled } = useMemo(
-    () => getBasicInfoValidation(draft),
+    () => getBasicInfoValidationFromDraft(draft),
     [draft]
   );
 

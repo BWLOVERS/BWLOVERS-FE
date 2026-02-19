@@ -1,5 +1,4 @@
 import ActionButton from '@/common/components/ActionButton';
-import Notice from '@/SignUp/components/Notice';
 import HealthForm from '@/SignUp/components/HealthForm';
 import { useCallback, useMemo, useState } from 'react';
 

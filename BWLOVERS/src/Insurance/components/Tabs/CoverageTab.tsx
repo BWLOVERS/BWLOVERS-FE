@@ -1,10 +1,7 @@
 import WaveBackground from '@/assets/Insurance/bg_wave_wide.svg?react';
 import NextIcon from '@/assets/Insurance/icon_arrow_next.svg?react';
-import { useNavigate } from 'react-router-dom';
 
 export default function CoverageTab() {
-  const navigate = useNavigate();
-
   return (
     <section className="relative flex-1 overflow-hidden pb-24">
       <WaveBackground className="absolute top-0 left-0" />
