@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import jobList from '@/SignUp/data/job_list.json';
 import type { SignUpBasicInfoState } from '../types/signupBasicInfo';
-import { mergeBasicInfoState } from '../utils/routeState';
+import { usePregnancyInfoStore } from '@/stores/pregnancyInfoStore';
 
 type JobNode = {
   label: string;
@@ -123,13 +123,12 @@ export default function JobSelect() {
 
   const isCompleteEnabled = Boolean(detailValue);
 
+  const setDraft = usePregnancyInfoStore((s) => s.setDraft);
   const handleComplete = () => {
     if (!detailValue) return;
 
-    navigate(returnTo, {
-      state: mergeBasicInfoState(incomingState, { job: detailValue }),
-      replace: true
-    });
+    setDraft({ jobName: detailValue });
+    navigate(returnTo, { replace: true });
   };
 
   const handleBack = () => {
