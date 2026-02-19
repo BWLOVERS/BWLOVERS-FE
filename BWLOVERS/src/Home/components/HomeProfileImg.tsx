@@ -1,4 +1,3 @@
-import { useRef } from 'react';
 import DefaultProfile from '@/assets/common/defaultprofile.svg?react';
 
 type ProfileImgProps = {
