@@ -40,7 +40,8 @@ export default function EditBasicInfo() {
 
     if (typeof incomingState.birthDate === 'string')
       setBirthDate(incomingState.birthDate);
-    if (typeof incomingState.job === 'string') setJob(incomingState.job);
+    if (typeof incomingState.jobName === 'string')
+      setJob(incomingState.jobName);
     if (typeof incomingState.expectedDate === 'string')
       setExpectedDate(incomingState.expectedDate);
     if (typeof incomingState.height === 'string')
@@ -52,8 +53,8 @@ export default function EditBasicInfo() {
     if (typeof incomingState.gestationalWeek === 'string')
       setGestationalWeek(incomingState.gestationalWeek);
 
-    if (typeof incomingState.isMultiple !== 'undefined')
-      setIsMultiple(incomingState.isMultiple ?? null);
+    if (typeof incomingState.isMultiplePregnancy !== 'undefined')
+      setIsMultiple(incomingState.isMultiplePregnancy ?? null);
     if (typeof incomingState.miscarriageHistory !== 'undefined')
       setMiscarriageHistory(incomingState.miscarriageHistory ?? null);
     if (typeof incomingState.isFirstbirth !== 'undefined')
@@ -78,13 +79,13 @@ export default function EditBasicInfo() {
   const currentFormState: SignUpBasicInfoState = useMemo(
     () => ({
       birthDate,
-      job,
+      jobName: job,
       expectedDate,
       height,
       weightPre,
       weightCurrent,
       gestationalWeek,
-      isMultiple,
+      isMultiplePregnancy: isMultiple,
       miscarriageHistory,
       isFirstbirth,
       miscarriageCount
