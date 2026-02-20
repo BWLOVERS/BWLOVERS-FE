@@ -22,7 +22,7 @@ type HealthFormProps = {
 
 function onlyDigitsMax8(value: string) {
   const digits = value.replace(/\D/g, '');
-  return digits.slice(0, 8);
+  return digits.slice(0, 6);
 }
 
 function CheckboxIcon({ checked }: { checked: boolean }) {
@@ -64,12 +64,10 @@ export default function HealthForm({
   onCompleteChange
 }: HealthFormProps) {
   const { groups, hasExtraInputs, isSecondCategory } = FORM_CONFIG[variant];
-
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [extraByDisease, setExtraByDisease] = useState<
     Record<string, ExtraState>
   >({});
-  const [etcText, setEtcText] = useState('');
   const [noneChecked, setNoneChecked] = useState(false);
 
   const selectedDiseases = useMemo(
@@ -90,7 +88,6 @@ export default function HealthForm({
       isSecondCategory,
       noneChecked,
       selectedDiseases,
-      etcText,
       extraByDisease: extraForValidation
     });
   }, [
@@ -98,7 +95,6 @@ export default function HealthForm({
     isSecondCategory,
     noneChecked,
     selectedDiseases,
-    etcText,
     extraByDisease
   ]);
 
@@ -106,7 +102,7 @@ export default function HealthForm({
     onCompleteChange?.(variant, isCompleted);
   }, [onCompleteChange, variant, isCompleted]);
 
-  const formBorder = isCompleted ? 'border-[#FFBECD]' : 'border-[#A9A9A9]';
+  const formBorder = isCompleted ? 'border-[#FFBECD]' : 'border-[#d1d1d1]';
 
   const toggleDisease = (disease: string) => {
     if (noneChecked) return;
@@ -142,7 +138,6 @@ export default function HealthForm({
       if (next) {
         setSelected({});
         setExtraByDisease({});
-        setEtcText('');
       }
       return next;
     });
@@ -242,7 +237,7 @@ export default function HealthForm({
 
                           {!isSecondCategory ? (
                             <div className="flex w-full items-center justify-between text-caption-md text-black">
-                              <span>• 마지막 치료, 진료 날짜</span>
+                              <span>• 마지막 치료, 진료 월</span>
                               <input
                                 value={extra.lastDate}
                                 onChange={(e) =>
@@ -251,8 +246,8 @@ export default function HealthForm({
                                   })
                                 }
                                 inputMode="numeric"
-                                maxLength={8}
-                                placeholder="날짜 8자리 (ex. 20250101)"
+                                maxLength={6}
+                                placeholder="연,월만 입력 (ex. 202501)"
                                 className="flex w-28 items-center justify-center rounded-lg border border-gray-20 bg-white px-[0.59375rem] py-1.25 text-caption-xs text-black placeholder:text-gray-40"
                               />
                             </div>
@@ -266,20 +261,6 @@ export default function HealthForm({
             </div>
           );
         })}
-
-        <div className="flex w-full flex-col items-start gap-2.5 border-b border-[#E4E4E4] pb-4">
-          <div className="text-body-bold-sm flex h-5 flex-col justify-center self-stretch text-black">
-            기타
-          </div>
-
-          <input
-            value={etcText}
-            onChange={(e) => setEtcText(e.target.value)}
-            disabled={noneChecked}
-            placeholder="직접 입력"
-            className="flex w-full items-center self-stretch rounded-[0.625rem] border border-gray-20 bg-white px-3 py-1.75 text-caption-sm text-black placeholder:text-gray-40 disabled:opacity-40"
-          />
-        </div>
 
         <div className="mt-3 flex items-center gap-0.5">
           <button
