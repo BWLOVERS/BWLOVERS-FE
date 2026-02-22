@@ -10,17 +10,25 @@ import {
   type ExtraState as ExtraStateForValidation
 } from '../utils/healthFormValidation';
 
-type ExtraState = {
+export type ExtraState = {
   cured: 'yes' | 'no' | null;
   lastDate: string;
+};
+
+export type HealthFormValue = {
+  noneChecked: boolean;
+  selected: Record<string, boolean>;
+  extraByDisease: Record<string, ExtraState>;
 };
 
 type HealthFormProps = {
   variant: HealthVariant;
   onCompleteChange?: (variant: HealthVariant, completed: boolean) => void;
+
+  onValueChange?: (variant: HealthVariant, value: HealthFormValue) => void;
 };
 
-function onlyDigitsMax8(value: string) {
+function onlyDigitsMax6(value: string) {
   const digits = value.replace(/\D/g, '');
   return digits.slice(0, 6);
 }
@@ -61,9 +69,11 @@ function CheckItem({
 
 export default function HealthForm({
   variant,
-  onCompleteChange
+  onCompleteChange,
+  onValueChange
 }: HealthFormProps) {
   const { groups, hasExtraInputs, isSecondCategory } = FORM_CONFIG[variant];
+
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [extraByDisease, setExtraByDisease] = useState<
     Record<string, ExtraState>
@@ -102,6 +112,11 @@ export default function HealthForm({
     onCompleteChange?.(variant, isCompleted);
   }, [onCompleteChange, variant, isCompleted]);
 
+  // ✅ 추가: 값 전달
+  useEffect(() => {
+    onValueChange?.(variant, { noneChecked, selected, extraByDisease });
+  }, [onValueChange, variant, noneChecked, selected, extraByDisease]);
+
   const formBorder = isCompleted ? 'border-[#FFBECD]' : 'border-[#d1d1d1]';
 
   const toggleDisease = (disease: string) => {
@@ -122,7 +137,6 @@ export default function HealthForm({
           ...prevExtra,
           [disease]: prevExtra[disease] ?? {
             cured: null,
-            extra2: '',
             lastDate: ''
           }
         }));
@@ -242,7 +256,7 @@ export default function HealthForm({
                                 value={extra.lastDate}
                                 onChange={(e) =>
                                   updateExtra(disease, {
-                                    lastDate: onlyDigitsMax8(e.target.value)
+                                    lastDate: onlyDigitsMax6(e.target.value)
                                   })
                                 }
                                 inputMode="numeric"
