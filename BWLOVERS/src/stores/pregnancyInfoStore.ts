@@ -4,9 +4,9 @@ import { persist } from 'zustand/middleware';
 export type ToggleValue = 'yes' | 'no' | null;
 
 export type PregnancyInfoDraft = {
-  birthDate: string;
-  jobName: string;
-  expectedDate: string;
+  birthDate: string; // yyyymmdd
+  jobName: string; // 세분류 1개
+  expectedDate: string; // yyyymmdd
   height: string;
   weightPre: string;
   weightCurrent: string;
@@ -14,21 +14,22 @@ export type PregnancyInfoDraft = {
   isFirstbirth: ToggleValue;
   isMultiplePregnancy: ToggleValue;
   miscarriageHistory: ToggleValue;
-  miscarriageCount: string;
+  miscarriageCount: string; // 유산경험 yes일 때만
 };
 
+// ✅ 백엔드 명세(이미지 기준): job은 1개
 export type PregnancyInfoResponse = {
   infoId: number;
   userId: number;
-  birthDate: string;
+  birthDate: string; // "YYYY-MM-DD"
   height: number;
   weightPre: number;
   weightCurrent: number;
   isFirstbirth: boolean;
   gestationalWeek: number;
-  expectedDate: string;
+  expectedDate: string; // "YYYY-MM-DD"
   isMultiplePregnancy: boolean;
-  miscarriageHistory: number;
+  miscarriageHistory: number; // 0이면 없음, 1 이상이면 횟수
   job: {
     jobId: number;
     jobName: string;
@@ -42,7 +43,6 @@ type PregnancyInfoStore = {
 
   setDraft: (partial: Partial<PregnancyInfoDraft>) => void;
 
-  // ✅ 추가: key/value로 안전하게 업데이트
   setDraftField: <K extends keyof PregnancyInfoDraft>(
     key: K,
     value: PregnancyInfoDraft[K]

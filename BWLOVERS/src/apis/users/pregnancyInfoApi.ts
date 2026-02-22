@@ -13,5 +13,13 @@ export const pregnancyInfoApi = {
       body
     );
     return data;
+  },
+
+  // ✅ 조회
+  async getPregnancyInfo() {
+    const { data } = await axiosInstance.get<PregnancyInfoResponse>(
+      '/users/me/pregnancy-info'
+    );
+    return data;
   }
 };

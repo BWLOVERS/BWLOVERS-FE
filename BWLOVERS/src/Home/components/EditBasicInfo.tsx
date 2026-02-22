@@ -13,12 +13,22 @@ import type {
 import { onlyDigits, sliceTo8Digits } from '@/SignUp/utils/inputUtils';
 import { mergeBasicInfoState } from '@/SignUp/utils/routeState';
 import { getBasicInfoValidation } from '@/SignUp/utils/basicInfoValidation';
+import { pregnancyInfoApi } from '@/apis/users/pregnancyInfoApi';
+import { mapResponseToBasicInfoState } from '@/SignUp/utils/pregnancyInfoMapper';
+import { usePregnancyInfoStore } from '@/stores/pregnancyInfoStore';
+
+type JobSelectRouteState = SignUpBasicInfoState & {
+  returnTo?: string;
+};
 
 export default function EditBasicInfo() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const incomingState = (location.state as SignUpBasicInfoState | null) ?? null;
+  const incomingState = (location.state as JobSelectRouteState | null) ?? null;
+
+  // ✅ JobSelect는 zustand draft를 바꾸는 구조라서 구독
+  const draftJobName = usePregnancyInfoStore((s) => s.draft.jobName);
 
   const [birthDate, setBirthDate] = useState('');
   const [job, setJob] = useState('');
@@ -35,33 +45,67 @@ export default function EditBasicInfo() {
 
   const [isSaveClicked, setIsSaveClicked] = useState(false);
 
+  // ✅ 공통: state를 폼에 반영하는 함수
+  const applyStateToForm = (state: SignUpBasicInfoState) => {
+    if (typeof state.birthDate === 'string') setBirthDate(state.birthDate);
+    if (typeof state.jobName === 'string') setJob(state.jobName);
+    if (typeof state.expectedDate === 'string')
+      setExpectedDate(state.expectedDate);
+    if (typeof state.height === 'string') setHeight(state.height);
+    if (typeof state.weightPre === 'string') setWeightPre(state.weightPre);
+    if (typeof state.weightCurrent === 'string')
+      setWeightCurrent(state.weightCurrent);
+    if (typeof state.gestationalWeek === 'string')
+      setGestationalWeek(state.gestationalWeek);
+
+    if (typeof state.isMultiplePregnancy !== 'undefined')
+      setIsMultiple(state.isMultiplePregnancy ?? null);
+    if (typeof state.miscarriageHistory !== 'undefined')
+      setMiscarriageHistory(state.miscarriageHistory ?? null);
+    if (typeof state.isFirstbirth !== 'undefined')
+      setIsFirstbirth(state.isFirstbirth ?? null);
+
+    if (typeof state.miscarriageCount === 'string')
+      setMiscarriageCount(state.miscarriageCount);
+  };
+
+  // ✅ (1) 탭 진입 시: 서버 조회해서 폼 자동 입력
+  useEffect(() => {
+    let alive = true;
+
+    const run = async () => {
+      try {
+        const res = await pregnancyInfoApi.getPregnancyInfo();
+        if (!alive) return;
+
+        const mapped = mapResponseToBasicInfoState(res);
+        applyStateToForm(mapped);
+
+        // ✅ 혹시 draft.jobName이 비어있으면(처음) job input에 서버값이 들어가게 됨
+        // (zustand draft는 여기서 굳이 건드릴 필요 없음)
+      } catch (e) {
+        if (import.meta.env.DEV) console.log('[GET pregnancy-info failed]', e);
+      }
+    };
+
+    run();
+
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  // ✅ (2) JobSelect에서 선택 후 돌아오면 zustand draft.jobName이 바뀜 → job input 업데이트
+  useEffect(() => {
+    if (!draftJobName) return;
+    setJob(draftJobName);
+  }, [draftJobName]);
+
+  // ✅ (3) 기존처럼 route state로 들어온 값이 있으면 우선 반영 (옵션)
+  // - 만약 EditBasicInfo에서 route state를 안 쓰기로 했다면 이 블록 삭제해도 됨
   useEffect(() => {
     if (!incomingState) return;
-
-    if (typeof incomingState.birthDate === 'string')
-      setBirthDate(incomingState.birthDate);
-    if (typeof incomingState.jobName === 'string')
-      setJob(incomingState.jobName);
-    if (typeof incomingState.expectedDate === 'string')
-      setExpectedDate(incomingState.expectedDate);
-    if (typeof incomingState.height === 'string')
-      setHeight(incomingState.height);
-    if (typeof incomingState.weightPre === 'string')
-      setWeightPre(incomingState.weightPre);
-    if (typeof incomingState.weightCurrent === 'string')
-      setWeightCurrent(incomingState.weightCurrent);
-    if (typeof incomingState.gestationalWeek === 'string')
-      setGestationalWeek(incomingState.gestationalWeek);
-
-    if (typeof incomingState.isMultiplePregnancy !== 'undefined')
-      setIsMultiple(incomingState.isMultiplePregnancy ?? null);
-    if (typeof incomingState.miscarriageHistory !== 'undefined')
-      setMiscarriageHistory(incomingState.miscarriageHistory ?? null);
-    if (typeof incomingState.isFirstbirth !== 'undefined')
-      setIsFirstbirth(incomingState.isFirstbirth ?? null);
-
-    if (typeof incomingState.miscarriageCount === 'string')
-      setMiscarriageCount(incomingState.miscarriageCount);
+    applyStateToForm(incomingState);
   }, [incomingState]);
 
   const handleDateChange =
@@ -125,8 +169,6 @@ export default function EditBasicInfo() {
 
     // ✅ 나중에 PATCH API 연결할 payload
     console.log('EDIT BASIC INFO SAVE PAYLOAD:', currentFormState);
-
-    // 저장 성공 후 토스트/모달 등 처리(추후)
   };
 
   return (
