@@ -139,7 +139,7 @@ export default function InsuranceCard({
           isClickable || hasExpandableArea
             ? 'cursor-pointer hover:bg-pink-40'
             : ''
-        } ${hasExpandableArea && isOpen ? 'rounded-b-[0]' : ''}`}
+        } ${hasExpandableArea && isOpen ? 'rounded-b-none' : ''}`}
       >
         <div className="flex w-full flex-col">
           <div className="flex flex-row justify-between">

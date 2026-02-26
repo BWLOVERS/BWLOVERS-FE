@@ -40,10 +40,10 @@ export default function Login() {
 
   return (
     <div
-      className="flex flex-1 flex-col items-center justify-center"
+      className="mt-15 flex flex-1 flex-col items-center justify-center"
       onClick={() => setIsContactOpen(false)}
     >
-      <div className="mb-34">
+      <div className="mb-30">
         <LogoFull className="mb-2 h-[8.94081rem] w-53.75" />
         <div className="flex h-7.25 justify-center text-heading-sm text-[#000000]">
           태아보험, 이젠 더 쉽게!
