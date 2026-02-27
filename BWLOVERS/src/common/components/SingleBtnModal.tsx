@@ -6,13 +6,15 @@ type SingleBtnModalProps = {
   title: string;
   content: string;
   onClose: () => void;
+  onConfirm: () => void;
 };
 
 export default function SingleBtnModal({
   open,
   title,
   content,
-  onClose
+  onClose,
+  onConfirm
 }: SingleBtnModalProps) {
   // ESC 키로 닫기
   useEffect(() => {
@@ -55,7 +57,7 @@ export default function SingleBtnModal({
           width="w-25.5"
           label="확인"
           onClick={() => {
-            onClose();
+            onConfirm();
           }}
         />
       </div>

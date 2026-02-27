@@ -10,9 +10,11 @@ import {
   type HealthStatusDraft
 } from '@/stores/healthStatusStore';
 import { healthStatusApi } from '@/apis/users/healthStatusApi';
+import SingleBtnModal from '@/common/components/SingleBtnModal';
 
 export default function SignUpHealth() {
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleBack = () => {
     navigate('/signup/info');
@@ -61,7 +63,7 @@ export default function SignUpHealth() {
 
     try {
       await healthStatusApi.postHealthStatus(draft);
-      navigate('/home');
+      setIsModalOpen(true);
     } catch (e) {
       if (import.meta.env.DEV) console.log('[POST health-status failed]', e);
     }
@@ -125,6 +127,17 @@ export default function SignUpHealth() {
           <ProgressBar currentStep={3} />
         </div>
       </div>
+
+      <SingleBtnModal
+        open={isModalOpen}
+        title="회원 가입 완료"
+        content={`회원 가입이 완료 되었습니다. \n유저 정보는 마이페이지에서 수정 가능합니다.`}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={() => {
+          setIsModalOpen(false);
+          navigate('/home');
+        }}
+      />
     </>
   );
 }

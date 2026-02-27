@@ -86,16 +86,20 @@ const PREGNANCY_COMPLICATION_MAP: Record<
 // =======================
 // 3) Request 타입
 // =======================
+type PastDiseaseItem = {
+  pastDiseaseType: PastDiseaseType;
+  pastCured: boolean;
+  pastLastTreatedAt: string; // 항상 보냄
+};
+
+type ChronicDiseaseItem = {
+  chronicDiseaseType: ChronicDiseaseType;
+  chronicOnMedication: boolean; // 항상 보냄
+};
+
 export type HealthStatusRequest = {
-  pastDiseases: {
-    pastDiseaseType: PastDiseaseType;
-    pastCured: boolean;
-    pastLastTreatedAt?: string; // "YYYY-MM"
-  }[];
-  chronicDiseases: {
-    chronicDiseaseType: ChronicDiseaseType;
-    chronicOnMedication: boolean;
-  }[];
+  pastDiseases: PastDiseaseItem[];
+  chronicDiseases: ChronicDiseaseItem[];
   pregnancyComplications: PregnancyComplicationType[];
 };
 
@@ -132,22 +136,24 @@ export function mapDraftToHealthStatusRequest(
   const pregnancyComplications: HealthStatusRequest['pregnancyComplications'] =
     [];
 
-  // ✅ 요구사항: "해당 없음"은 모든 질환에서 NONE을 명시적으로 보낸다
-  // (단, Past/Chronic enum에 NONE이 백엔드에도 있어야 함)
   if (draft.v1.noneChecked) {
-    pastDiseases.push({ pastDiseaseType: 'NONE', pastCured: true });
+    pastDiseases.push({
+      pastDiseaseType: 'NONE',
+      pastCured: false,
+      pastLastTreatedAt: '9999-01'
+    });
   } else {
     const labels = getSelectedLabels(draft.v1.selected);
     labels.forEach((label) => {
       const extra = draft.v1.extraByDisease[label];
-      const ym = yyyymmToYm(extra?.lastDate ?? '');
+      const ym = yyyymmToYm(extra?.lastDate ?? '') || '9999-01';
 
       const enumValue = assertMapped(PAST_DISEASE_MAP[label], label);
 
       pastDiseases.push({
         pastDiseaseType: enumValue,
         pastCured: extra?.cured === 'yes',
-        ...(ym ? { pastLastTreatedAt: ym } : {})
+        pastLastTreatedAt: ym
       });
     });
   }
@@ -171,7 +177,7 @@ export function mapDraftToHealthStatusRequest(
   }
 
   if (draft.v3.noneChecked) {
-    pregnancyComplications.push('NONE'); // ✅ 이미 백엔드에 존재
+    pregnancyComplications.push('NONE');
   } else {
     const labels = getSelectedLabels(draft.v3.selected);
     labels.forEach((label) => {
