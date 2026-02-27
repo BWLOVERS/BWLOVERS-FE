@@ -8,6 +8,7 @@ type LoginWithNaverRequest = {
 type LoginResponse = {
   accessToken: string;
   refreshToken: string;
+  isNew: boolean;
 };
 
 export const authApi = {

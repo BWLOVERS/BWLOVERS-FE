@@ -32,7 +32,6 @@ export default function Login() {
   const handleNaverLogin = (e: React.MouseEvent) => {
     e.stopPropagation();
 
-    // ✅ state 저장 (콜백에서 검증용)
     sessionStorage.setItem('naver_oauth_state', state);
 
     window.location.href = naverAuthUrl;
