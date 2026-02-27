@@ -1,22 +1,43 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ActionButton from '@/common/components/ActionButton';
 import Header from '@/common/components/Header';
 import ProgressBar from '@/common/components/ProgressBar';
 import LabeledInput from '../components/LabeledInput';
 import ProfileImg from '../components/ProfileImg';
-import TestProfile from '@/assets/common/profileTest.png';
+
+import { useUserAccountStore } from '@/stores/userAccountStore';
+import { tokenStorage } from '@/apis/auth/tokenStorage';
 
 export default function SignUpAccount() {
   const navigate = useNavigate();
 
-  const userProfileUrl: string | null = TestProfile;
+  const { me, fetchMe } = useUserAccountStore();
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const [nickname, setNickname] = useState('봉원이');
-  const [email] = useState('abc1234@naver.com');
-  const [phone] = useState('010-1234-5678');
+  //편집 가능한 값 (닉네임)
+  const [nickname, setNickname] = useState('');
+
+  useEffect(() => {
+    const accessToken = tokenStorage.getAccessToken?.();
+    if (!accessToken) return;
+
+    fetchMe();
+  }, [fetchMe]);
+
+  useEffect(() => {
+    if (!me) return;
+    setNickname((prev) => (prev ? prev : (me.username ?? '')));
+  }, [me]);
+
+  const email = me?.email ?? '';
+  const phone = me?.phone ?? '';
+  const userProfileUrl = me?.profileImageUrl ?? null;
+
+  const imageUrl = useMemo(() => {
+    return previewUrl ?? userProfileUrl ?? null;
+  }, [previewUrl, userProfileUrl]);
 
   const handleProfileChange = (file: File) => {
     const nextUrl = URL.createObjectURL(file);
@@ -26,7 +47,7 @@ export default function SignUpAccount() {
       return nextUrl;
     });
 
-    //나중에 업로드 api 연결
+    // 나중에 업로드 api 연결
     // uploadProfileImage(file);
   };
 
@@ -34,6 +55,7 @@ export default function SignUpAccount() {
 
   const handleNext = () => {
     if (!isNicknameValid) return;
+
     navigate('/signup/info');
   };
 
@@ -43,10 +65,7 @@ export default function SignUpAccount() {
 
       <main className="flex flex-1 flex-col items-center justify-center">
         <div className="flex w-full flex-col items-center">
-          <ProfileImg
-            imageUrl={previewUrl ?? userProfileUrl}
-            onChange={handleProfileChange}
-          />
+          <ProfileImg imageUrl={imageUrl} onChange={handleProfileChange} />
 
           {/* 입력 폼 */}
           <div className="flex w-73.25 flex-col items-start gap-4.5">
