@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 export type ExtraState = {
   cured: 'yes' | 'no' | null;
-  lastDate: string; // "202501"
+  lastDate: string;
 };
 
 export type HealthFormValue = {
@@ -11,20 +11,19 @@ export type HealthFormValue = {
   extraByDisease: Record<string, ExtraState>;
 };
 
-// API로 보낼 draft 타입 (함수 없음)
 export type HealthStatusDraft = {
   v1: HealthFormValue;
   v2: HealthFormValue;
   v3: HealthFormValue;
 };
 
-// store 상태 타입(함수 포함)
 export type HealthStatusState = HealthStatusDraft & {
+  hasLoaded: boolean;
   setVariantValue: (variant: 1 | 2 | 3, value: HealthFormValue) => void;
+  setAll: (draft: HealthStatusDraft) => void;
   resetAll: () => void;
 };
 
-// 참조 공유 방지
 const createEmptyValue = (): HealthFormValue => ({
   noneChecked: false,
   selected: {},
@@ -35,6 +34,7 @@ export const useHealthStatusStore = create<HealthStatusState>((set) => ({
   v1: createEmptyValue(),
   v2: createEmptyValue(),
   v3: createEmptyValue(),
+  hasLoaded: false,
 
   setVariantValue: (variant, value) =>
     set((prev) => ({
@@ -44,10 +44,19 @@ export const useHealthStatusStore = create<HealthStatusState>((set) => ({
       ...(variant === 3 ? { v3: value } : {})
     })),
 
+  setAll: (draft) =>
+    set({
+      v1: draft.v1,
+      v2: draft.v2,
+      v3: draft.v3,
+      hasLoaded: true
+    }),
+
   resetAll: () =>
     set({
       v1: createEmptyValue(),
       v2: createEmptyValue(),
-      v3: createEmptyValue()
+      v3: createEmptyValue(),
+      hasLoaded: false
     })
 }));

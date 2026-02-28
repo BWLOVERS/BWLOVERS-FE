@@ -2,7 +2,7 @@ import { axiosInstance } from '@/apis/axiosInstance';
 import type {
   PregnancyInfoDraft,
   PregnancyInfoResponse
-} from '@/stores/pregnancyInfoStore';
+} from '@/SignUp/stores/pregnancyInfoStore';
 import { mapDraftToPregnancyInfoRequest } from '@/SignUp/utils/pregnancyInfoMapper';
 
 export type PregnancyInfoUpsertRequest = ReturnType<

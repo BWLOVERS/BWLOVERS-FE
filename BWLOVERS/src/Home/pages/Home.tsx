@@ -7,7 +7,7 @@ import SavedInsurance from '../components/SavedInsurance';
 import SavedReport from '../components/SavedReport';
 import HomeMenuItem from '../components/HomeMenuItem';
 import { useNavigate } from 'react-router-dom';
-import { useUserAccountStore } from '@/stores/userAccountStore';
+import { useUserAccountStore } from '@/SignUp/stores/userAccountStore';
 import { useEffect, useState } from 'react';
 import DoubleBtnModal from '@/common/components/DoubleBtnModal';
 import { tokenStorage } from '@/apis/auth/tokenStorage';
@@ -129,7 +129,7 @@ export default function Home() {
       <DoubleBtnModal
         open={isConfirmModalOpen}
         title="탈퇴 의사 최종 확인"
-        content={`탈퇴 시 모든 정보가 삭제되며, \n복구할 수 없습니다.\n입력 제출 시 탈퇴가 완료 됩니다.`}
+        content={`탈퇴 시 모든 정보가 삭제되며, \n복구할 수 없습니다.\n ⚠️ 입력 제출 시 탈퇴가 완료 됩니다.`}
         cancelLabel="취소"
         confirmLabel="확인"
         requireConfirmText

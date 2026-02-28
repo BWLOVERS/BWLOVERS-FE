@@ -2,7 +2,7 @@ import type {
   PregnancyInfoDraft,
   ToggleValue,
   PregnancyInfoResponse
-} from '@/stores/pregnancyInfoStore';
+} from '@/SignUp/stores/pregnancyInfoStore';
 import type { SignUpBasicInfoState } from '@/SignUp/types/signupBasicInfo';
 
 function toIsoDate(yyyymmdd: string) {

@@ -1,10 +1,8 @@
 import { axiosInstance } from '@/apis/axiosInstance';
-import type { HealthStatusDraft } from '@/stores/healthStatusStore';
+import type { HealthStatusDraft } from '@/SignUp/stores/healthStatusStore';
 
-// =======================
-// 1) 서버 enum 타입 (권장: 오타 방지)
-// =======================
-type PastDiseaseType =
+//서버 enum 타입
+export type PastDiseaseType =
   | 'UTERINE_FIBROID'
   | 'ENDOMETRIOSIS'
   | 'OVARIAN_CYST'
@@ -16,14 +14,16 @@ type PastDiseaseType =
   | 'DEPRESSION'
   | 'ANXIETY_DISORDER'
   | 'NONE';
-type ChronicDiseaseType =
+
+export type ChronicDiseaseType =
   | 'HYPERTENSION'
   | 'DIABETES'
   | 'ASTHMA'
   | 'LUPUS'
   | 'RHEUMATOID_ARTHRITIS'
   | 'NONE';
-type PregnancyComplicationType =
+
+export type PregnancyComplicationType =
   | 'GESTATIONAL_DIABETES'
   | 'GESTATIONAL_HYPERTENSION'
   | 'PREECLAMPSIA'
@@ -35,9 +35,7 @@ type PregnancyComplicationType =
   | 'CONGENITAL_ANOMALY'
   | 'NONE';
 
-// =======================
-// 2) 한글 라벨 -> enum 매핑표 (✅ ETC/기타 삭제)
-// =======================
+// 한글 라벨 -> enum 매핑
 const PAST_DISEASE_MAP: Record<string, Exclude<PastDiseaseType, 'NONE'>> = {
   자궁근종: 'UTERINE_FIBROID',
   자궁내막증: 'ENDOMETRIOSIS',
@@ -83,18 +81,16 @@ const PREGNANCY_COMPLICATION_MAP: Record<
   '선천적 이상 소견': 'CONGENITAL_ANOMALY'
 };
 
-// =======================
-// 3) Request 타입
-// =======================
+// Request 타입
 type PastDiseaseItem = {
   pastDiseaseType: PastDiseaseType;
   pastCured: boolean;
-  pastLastTreatedAt: string; // 항상 보냄
+  pastLastTreatedAt: string;
 };
 
 type ChronicDiseaseItem = {
   chronicDiseaseType: ChronicDiseaseType;
-  chronicOnMedication: boolean; // 항상 보냄
+  chronicOnMedication: boolean;
 };
 
 export type HealthStatusRequest = {
@@ -103,11 +99,36 @@ export type HealthStatusRequest = {
   pregnancyComplications: PregnancyComplicationType[];
 };
 
+// Response 타입
+export type HealthStatusResponse = {
+  statusId: number;
+  userId: number;
+  createdAt: string;
+
+  pastDiseases: Array<{
+    pastId: number;
+    pastDiseaseType: PastDiseaseType;
+    pastCured: boolean;
+    pastLastTreatedYm: string;
+  }>;
+
+  chronicDiseases: Array<{
+    chronicId: number;
+    chronicDiseaseType: ChronicDiseaseType;
+    chronicOnMedication: boolean;
+  }>;
+
+  pregnancyComplications: Array<{
+    complicationId: number;
+    pregnancyComplicationType: PregnancyComplicationType;
+  }>;
+};
+
 function getSelectedLabels(selected: Record<string, boolean>) {
   return Object.keys(selected).filter((k) => selected[k]);
 }
 
-// "202501" -> "2025-01"
+// 날짜 형식 변환(-포함)
 function yyyymmToYm(value: string) {
   const digits = (value ?? '').replace(/\D/g, '');
   if (digits.length !== 6) return '';
@@ -128,6 +149,7 @@ function assertMapped<T>(mapped: T | undefined, label: string): T {
   return mapped;
 }
 
+//Draft -> Request (POST/PUT)
 export function mapDraftToHealthStatusRequest(
   draft: HealthStatusDraft
 ): HealthStatusRequest {
@@ -136,6 +158,7 @@ export function mapDraftToHealthStatusRequest(
   const pregnancyComplications: HealthStatusRequest['pregnancyComplications'] =
     [];
 
+  // v1
   if (draft.v1.noneChecked) {
     pastDiseases.push({
       pastDiseaseType: 'NONE',
@@ -158,6 +181,7 @@ export function mapDraftToHealthStatusRequest(
     });
   }
 
+  // v2
   if (draft.v2.noneChecked) {
     chronicDiseases.push({
       chronicDiseaseType: 'NONE',
@@ -176,6 +200,7 @@ export function mapDraftToHealthStatusRequest(
     });
   }
 
+  // v3
   if (draft.v3.noneChecked) {
     pregnancyComplications.push('NONE');
   } else {
@@ -189,20 +214,135 @@ export function mapDraftToHealthStatusRequest(
   return { pastDiseases, chronicDiseases, pregnancyComplications };
 }
 
+//Response -> Draft
+function invertMap<T extends string>(map: Record<string, T>) {
+  const inverted = {} as Record<T, string>;
+  Object.entries(map).forEach(([label, code]) => {
+    inverted[code] = label;
+  });
+  return inverted;
+}
+
+const PAST_LABEL_BY_ENUM = invertMap(PAST_DISEASE_MAP);
+const CHRONIC_LABEL_BY_ENUM = invertMap(CHRONIC_DISEASE_MAP);
+const PREG_LABEL_BY_ENUM = invertMap(PREGNANCY_COMPLICATION_MAP);
+
+function ymToYYYYMM(ym: string) {
+  return (ym ?? '').replace(/\D/g, '').slice(0, 6);
+}
+
+function createEmptyValue(): HealthStatusDraft['v1'] {
+  return { noneChecked: false, selected: {}, extraByDisease: {} };
+}
+
+export function mapHealthStatusResponseToDraft(
+  res: HealthStatusResponse | null
+): HealthStatusDraft {
+  const base: HealthStatusDraft = {
+    v1: createEmptyValue(),
+    v2: createEmptyValue(),
+    v3: createEmptyValue()
+  };
+
+  if (!res) return base;
+
+  // v1
+  const past = res.pastDiseases ?? [];
+  if (past.length === 0 || past.every((d) => d.pastDiseaseType === 'NONE')) {
+    base.v1.noneChecked = true;
+  } else {
+    past.forEach((d) => {
+      if (d.pastDiseaseType === 'NONE') return;
+
+      const label = (
+        PAST_LABEL_BY_ENUM as Partial<Record<PastDiseaseType, string>>
+      )[d.pastDiseaseType];
+      if (!label) return;
+
+      base.v1.selected[label] = true;
+      base.v1.extraByDisease[label] = {
+        cured: d.pastCured ? 'yes' : 'no',
+        lastDate: d.pastLastTreatedYm ? ymToYYYYMM(d.pastLastTreatedYm) : ''
+      };
+    });
+  }
+
+  // v2
+  const chronic = res.chronicDiseases ?? [];
+  if (
+    chronic.length === 0 ||
+    chronic.every((d) => d.chronicDiseaseType === 'NONE')
+  ) {
+    base.v2.noneChecked = true;
+  } else {
+    chronic.forEach((d) => {
+      if (d.chronicDiseaseType === 'NONE') return;
+
+      const label = (
+        CHRONIC_LABEL_BY_ENUM as Partial<Record<ChronicDiseaseType, string>>
+      )[d.chronicDiseaseType];
+      if (!label) return;
+
+      base.v2.selected[label] = true;
+      base.v2.extraByDisease[label] = {
+        cured: d.chronicOnMedication ? 'yes' : 'no',
+        lastDate: ''
+      };
+    });
+  }
+
+  // v3
+  const preg = res.pregnancyComplications ?? [];
+  if (
+    preg.length === 0 ||
+    preg.every((d) => d.pregnancyComplicationType === 'NONE')
+  ) {
+    base.v3.noneChecked = true;
+  } else {
+    preg.forEach((d) => {
+      if (d.pregnancyComplicationType === 'NONE') return;
+
+      const label = (
+        PREG_LABEL_BY_ENUM as Partial<Record<PregnancyComplicationType, string>>
+      )[d.pregnancyComplicationType];
+      if (!label) return;
+
+      base.v3.selected[label] = true;
+    });
+  }
+
+  return base;
+}
+
+//API
 export const healthStatusApi = {
   async postHealthStatus(draft: HealthStatusDraft) {
     const body = mapDraftToHealthStatusRequest(draft);
-
-    if (import.meta.env.DEV) {
-      console.log('[HEALTH STATUS] request body =', body);
-    }
-
     const { data } = await axiosInstance.post('/users/me/health-status', body);
-
-    if (import.meta.env.DEV) {
-      console.log('[HEALTH STATUS] success response =', data);
-    }
-
     return data;
+  },
+
+  async getHealthStatus() {
+    const { data } = await axiosInstance.get<HealthStatusResponse>(
+      '/users/me/health-status'
+    );
+    return data;
+  },
+
+  async getHealthStatusDraft() {
+    const res = await this.getHealthStatus();
+    return mapHealthStatusResponseToDraft(res);
+  },
+
+  // ✅ PUT: draft 보내고, 응답(res)을 draft로 변환해서 바로 돌려줌 (GET 추가 호출 없음)
+  async putHealthStatusDraft(draft: HealthStatusDraft) {
+    const body = mapDraftToHealthStatusRequest(draft);
+
+    const { data } = await axiosInstance.put<HealthStatusResponse>(
+      '/users/me/health-status',
+      body
+    );
+
+    return mapHealthStatusResponseToDraft(data);
   }
 };

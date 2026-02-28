@@ -1,7 +1,7 @@
 import type {
   PregnancyInfoDraft,
   ToggleValue
-} from '@/stores/pregnancyInfoStore';
+} from '@/SignUp/stores/pregnancyInfoStore';
 import type { SignUpBasicInfoState } from '@/SignUp/types/signupBasicInfo';
 import { isDate8 } from './inputUtils';
 

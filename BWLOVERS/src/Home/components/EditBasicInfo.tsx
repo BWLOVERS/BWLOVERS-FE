@@ -17,7 +17,7 @@ import {
   mapBasicInfoStateToDraft,
   mapResponseToBasicInfoState
 } from '@/SignUp/utils/pregnancyInfoMapper';
-import { usePregnancyInfoStore } from '@/stores/pregnancyInfoStore';
+import { usePregnancyInfoStore } from '@/SignUp/stores/pregnancyInfoStore';
 import SingleBtnModal from '@/common/components/SingleBtnModal';
 import { pregnancyInfoApi } from '@/apis/users/pregnancyInfoApi';
 

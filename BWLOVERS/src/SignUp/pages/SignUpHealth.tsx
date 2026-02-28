@@ -8,7 +8,7 @@ import { useCallback, useMemo, useState } from 'react';
 import {
   useHealthStatusStore,
   type HealthStatusDraft
-} from '@/stores/healthStatusStore';
+} from '@/SignUp/stores/healthStatusStore';
 import { healthStatusApi } from '@/apis/users/healthStatusApi';
 import SingleBtnModal from '@/common/components/SingleBtnModal';
 
