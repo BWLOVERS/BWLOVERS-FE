@@ -18,5 +18,9 @@ export const authApi = {
       body
     );
     return data;
+  },
+
+  async withdraw() {
+    await axiosInstance.delete('/users/withdraw');
   }
 };
