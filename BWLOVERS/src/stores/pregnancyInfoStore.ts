@@ -1,12 +1,12 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { pregnancyInfoApi } from '@/apis/users/pregnancyInfoApi';
 
 export type ToggleValue = 'yes' | 'no' | null;
 
 export type PregnancyInfoDraft = {
-  birthDate: string; // yyyymmdd
-  jobName: string; // 세분류 1개
-  expectedDate: string; // yyyymmdd
+  birthDate: string;
+  jobName: string;
+  expectedDate: string;
   height: string;
   weightPre: string;
   weightCurrent: string;
@@ -14,22 +14,21 @@ export type PregnancyInfoDraft = {
   isFirstbirth: ToggleValue;
   isMultiplePregnancy: ToggleValue;
   miscarriageHistory: ToggleValue;
-  miscarriageCount: string; // 유산경험 yes일 때만
+  miscarriageCount: string;
 };
 
-// ✅ 백엔드 명세(이미지 기준): job은 1개
 export type PregnancyInfoResponse = {
   infoId: number;
   userId: number;
-  birthDate: string; // "YYYY-MM-DD"
+  birthDate: string;
   height: number;
   weightPre: number;
   weightCurrent: number;
   isFirstbirth: boolean;
   gestationalWeek: number;
-  expectedDate: string; // "YYYY-MM-DD"
+  expectedDate: string;
   isMultiplePregnancy: boolean;
-  miscarriageHistory: number; // 0이면 없음, 1 이상이면 횟수
+  miscarriageHistory: number;
   job: {
     jobId: number;
     jobName: string;
@@ -39,7 +38,10 @@ export type PregnancyInfoResponse = {
 
 type PregnancyInfoStore = {
   draft: PregnancyInfoDraft;
+
   server: PregnancyInfoResponse | null;
+  isLoading: boolean;
+  error: unknown | null;
 
   setDraft: (partial: Partial<PregnancyInfoDraft>) => void;
 
@@ -52,6 +54,10 @@ type PregnancyInfoStore = {
 
   setServer: (data: PregnancyInfoResponse) => void;
   clearServer: () => void;
+
+  fetchPregnancyInfo: (opts?: {
+    force?: boolean;
+  }) => Promise<PregnancyInfoResponse | null>;
 };
 
 const INITIAL_DRAFT: PregnancyInfoDraft = {
@@ -69,22 +75,37 @@ const INITIAL_DRAFT: PregnancyInfoDraft = {
 };
 
 export const usePregnancyInfoStore = create<PregnancyInfoStore>()(
-  persist(
-    (set) => ({
-      draft: INITIAL_DRAFT,
-      server: null,
+  (set, get) => ({
+    draft: INITIAL_DRAFT,
 
-      setDraft: (partial) =>
-        set((state) => ({ draft: { ...state.draft, ...partial } })),
+    server: null,
+    isLoading: false,
+    error: null,
 
-      setDraftField: (key, value) =>
-        set((state) => ({ draft: { ...state.draft, [key]: value } })),
+    setDraft: (partial) =>
+      set((state) => ({ draft: { ...state.draft, ...partial } })),
 
-      resetDraft: () => set({ draft: INITIAL_DRAFT }),
+    setDraftField: (key, value) =>
+      set((state) => ({ draft: { ...state.draft, [key]: value } })),
 
-      setServer: (data) => set({ server: data }),
-      clearServer: () => set({ server: null })
-    }),
-    { name: 'pregnancy-info-store' }
-  )
+    resetDraft: () => set({ draft: INITIAL_DRAFT }),
+
+    setServer: (data) => set({ server: data }),
+    clearServer: () => set({ server: null }),
+
+    fetchPregnancyInfo: async (opts) => {
+      const cached = get().server;
+      if (cached && !opts?.force) return cached;
+
+      set({ isLoading: true, error: null });
+      try {
+        const res = await pregnancyInfoApi.getPregnancyInfo();
+        set({ server: res, isLoading: false });
+        return res;
+      } catch (e) {
+        set({ isLoading: false, error: e });
+        return null;
+      }
+    }
+  })
 );

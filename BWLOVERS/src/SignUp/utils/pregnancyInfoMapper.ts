@@ -14,7 +14,6 @@ function toIsoDate(yyyymmdd: string) {
 }
 
 function isoTo8(iso: string) {
-  // "YYYY-MM-DD" -> "YYYYMMDD"
   if (!iso) return '';
   const parts = iso.split('-');
   if (parts.length !== 3) return '';
@@ -51,14 +50,15 @@ export function mapDraftToPregnancyInfoRequest(draft: PregnancyInfoDraft) {
   };
 }
 
-// ✅ GET 응답 -> EditBasicInfo에서 사용하는 state로 변환
 export function mapResponseToBasicInfoState(
   res: PregnancyInfoResponse
 ): SignUpBasicInfoState {
+  const resolvedJobName = res.job?.jobName ?? '';
+
   return {
     birthDate: isoTo8(res.birthDate),
     expectedDate: isoTo8(res.expectedDate),
-    jobName: res.job?.jobName ?? '',
+    jobName: resolvedJobName,
     height: String(res.height ?? ''),
     weightPre: String(res.weightPre ?? ''),
     weightCurrent: String(res.weightCurrent ?? ''),
@@ -68,5 +68,23 @@ export function mapResponseToBasicInfoState(
     miscarriageHistory: res.miscarriageHistory > 0 ? 'yes' : 'no',
     miscarriageCount:
       res.miscarriageHistory > 0 ? String(res.miscarriageHistory) : ''
+  };
+}
+
+export function mapBasicInfoStateToDraft(
+  state: SignUpBasicInfoState
+): PregnancyInfoDraft {
+  return {
+    birthDate: state.birthDate ?? '',
+    jobName: state.jobName ?? '',
+    expectedDate: state.expectedDate ?? '',
+    height: state.height ?? '',
+    weightPre: state.weightPre ?? '',
+    weightCurrent: state.weightCurrent ?? '',
+    gestationalWeek: state.gestationalWeek ?? '',
+    isFirstbirth: state.isFirstbirth ?? null,
+    isMultiplePregnancy: state.isMultiplePregnancy ?? null,
+    miscarriageHistory: state.miscarriageHistory ?? null,
+    miscarriageCount: state.miscarriageCount ?? ''
   };
 }

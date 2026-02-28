@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ActionButton from '@/common/components/ActionButton';
 import LabeledInput from '@/SignUp/components/LabeledInput';
@@ -13,22 +13,33 @@ import type {
 import { onlyDigits, sliceTo8Digits } from '@/SignUp/utils/inputUtils';
 import { mergeBasicInfoState } from '@/SignUp/utils/routeState';
 import { getBasicInfoValidation } from '@/SignUp/utils/basicInfoValidation';
-import { pregnancyInfoApi } from '@/apis/users/pregnancyInfoApi';
-import { mapResponseToBasicInfoState } from '@/SignUp/utils/pregnancyInfoMapper';
+import {
+  mapBasicInfoStateToDraft,
+  mapResponseToBasicInfoState
+} from '@/SignUp/utils/pregnancyInfoMapper';
 import { usePregnancyInfoStore } from '@/stores/pregnancyInfoStore';
+import SingleBtnModal from '@/common/components/SingleBtnModal';
+import { pregnancyInfoApi } from '@/apis/users/pregnancyInfoApi';
 
 type JobSelectRouteState = SignUpBasicInfoState & {
   returnTo?: string;
 };
 
 export default function EditBasicInfo() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
 
   const incomingState = (location.state as JobSelectRouteState | null) ?? null;
 
-  // ✅ JobSelect는 zustand draft를 바꾸는 구조라서 구독
   const draftJobName = usePregnancyInfoStore((s) => s.draft.jobName);
+
+  const server = usePregnancyInfoStore((s) => s.server);
+  const fetchPregnancyInfo = usePregnancyInfoStore((s) => s.fetchPregnancyInfo);
+  const setServer = usePregnancyInfoStore((s) => s.setServer);
+
+  const didInitFormRef = useRef(false);
 
   const [birthDate, setBirthDate] = useState('');
   const [job, setJob] = useState('');
@@ -45,7 +56,6 @@ export default function EditBasicInfo() {
 
   const [isSaveClicked, setIsSaveClicked] = useState(false);
 
-  // ✅ 공통: state를 폼에 반영하는 함수
   const applyStateToForm = (state: SignUpBasicInfoState) => {
     if (typeof state.birthDate === 'string') setBirthDate(state.birthDate);
     if (typeof state.jobName === 'string') setJob(state.jobName);
@@ -69,44 +79,33 @@ export default function EditBasicInfo() {
       setMiscarriageCount(state.miscarriageCount);
   };
 
-  // ✅ (1) 탭 진입 시: 서버 조회해서 폼 자동 입력
-  useEffect(() => {
-    let alive = true;
-
-    const run = async () => {
-      try {
-        const res = await pregnancyInfoApi.getPregnancyInfo();
-        if (!alive) return;
-
-        const mapped = mapResponseToBasicInfoState(res);
-        applyStateToForm(mapped);
-
-        // ✅ 혹시 draft.jobName이 비어있으면(처음) job input에 서버값이 들어가게 됨
-        // (zustand draft는 여기서 굳이 건드릴 필요 없음)
-      } catch (e) {
-        if (import.meta.env.DEV) console.log('[GET pregnancy-info failed]', e);
-      }
-    };
-
-    run();
-
-    return () => {
-      alive = false;
-    };
-  }, []);
-
-  // ✅ (2) JobSelect에서 선택 후 돌아오면 zustand draft.jobName이 바뀜 → job input 업데이트
-  useEffect(() => {
-    if (!draftJobName) return;
-    setJob(draftJobName);
-  }, [draftJobName]);
-
-  // ✅ (3) 기존처럼 route state로 들어온 값이 있으면 우선 반영 (옵션)
-  // - 만약 EditBasicInfo에서 route state를 안 쓰기로 했다면 이 블록 삭제해도 됨
+  // route state가 있으면 우선 반영
   useEffect(() => {
     if (!incomingState) return;
     applyStateToForm(incomingState);
   }, [incomingState]);
+
+  //store를 통해 조회
+  useEffect(() => {
+    fetchPregnancyInfo();
+  }, [fetchPregnancyInfo]);
+
+  // server가 준비되면 폼 초기화
+  useEffect(() => {
+    if (!server) return;
+    if (didInitFormRef.current) return;
+
+    didInitFormRef.current = true;
+
+    const mapped = mapResponseToBasicInfoState(server);
+    applyStateToForm(mapped);
+  }, [server]);
+
+  //JobSelect에서 선택 후 돌아오면 job만 업데이트
+  useEffect(() => {
+    if (!draftJobName) return;
+    setJob(draftJobName);
+  }, [draftJobName]);
 
   const handleDateChange =
     (setter: React.Dispatch<React.SetStateAction<string>>) =>
@@ -163,12 +162,21 @@ export default function EditBasicInfo() {
     });
   };
 
-  const handleSave = () => {
+  //PATCH
+  const handleSave = async () => {
     setIsSaveClicked(true);
     if (hasError) return;
 
-    // ✅ 나중에 PATCH API 연결할 payload
-    console.log('EDIT BASIC INFO SAVE PAYLOAD:', currentFormState);
+    try {
+      const draftForPatch = mapBasicInfoStateToDraft(currentFormState);
+      const updated = await pregnancyInfoApi.patchPregnancyInfo(draftForPatch);
+
+      setServer(updated);
+
+      setIsModalOpen(true);
+    } catch (e) {
+      if (import.meta.env.DEV) console.log('[PATCH pregnancy-info failed]', e);
+    }
   };
 
   return (
@@ -224,7 +232,7 @@ export default function EditBasicInfo() {
 
           <LabeledInput
             label="출산 예정일"
-            placeholder="출산 예정일 8자리 입력 (ex. 19950101)"
+            placeholder="출산 예정일 8자리 입력 (ex. 20260520)"
             type="tel"
             value={expectedDate}
             onChange={handleDateChange(setExpectedDate)}
@@ -278,6 +286,16 @@ export default function EditBasicInfo() {
           disabled={!isAllRequiredFilled}
         />
       </div>
+
+      <SingleBtnModal
+        open={isModalOpen}
+        title="수정 완료"
+        content="회원 정보가 수정되었습니다."
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={() => {
+          setIsModalOpen(false);
+        }}
+      />
     </>
   );
 }

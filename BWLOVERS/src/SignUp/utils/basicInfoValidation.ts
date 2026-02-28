@@ -21,7 +21,6 @@ type BasicInfoErrors = {
 
 const isEmpty = (v?: string) => (v ?? '').trim().length === 0;
 
-/** ✅ (1) Signup(zustand draft)에서 쓰는 validation */
 export const getBasicInfoValidationFromDraft = (draft: PregnancyInfoDraft) => {
   const errors: BasicInfoErrors = {
     birthDate: !isDate8(draft.birthDate),
@@ -57,7 +56,6 @@ export const getBasicInfoValidationFromDraft = (draft: PregnancyInfoDraft) => {
   return { errors, hasError, isAllRequiredFilled };
 };
 
-/** ✅ (2) EditBasicInfo(로컬 state / route state)에서 쓰는 validation */
 export const getBasicInfoValidation = (state: SignUpBasicInfoState) => {
   const birthDate = state.birthDate ?? '';
   const expectedDate = state.expectedDate ?? '';
