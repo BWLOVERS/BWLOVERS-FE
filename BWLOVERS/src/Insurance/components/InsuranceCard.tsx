@@ -228,7 +228,7 @@ export default function InsuranceCard({
         </div>
       </div>
 
-      {/* 내가 저장한 보험 페이지에서 사용하는 추가 부분 */}
+      {/* 내가 저장한 보험 페이지에서 사용하는 추가 부분(아코디언) */}
       {hasExpandableArea && (
         <div
           className={`overflow-hidden rounded-b-[0.9375rem] border-2 border-t-0 bg-white shadow-[0_0_4px_0_rgba(0,0,0,0.10)] transition-[max-height] duration-300 ease-in-out ${isSelected ? 'border-pink-60' : 'border-transparent'} ${isOpen ? 'max-h-125' : 'max-h-0'}`}

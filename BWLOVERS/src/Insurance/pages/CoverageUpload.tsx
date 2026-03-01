@@ -5,6 +5,7 @@ import InfoIcon from '@/assets/common/icon_information.svg?react';
 import InsuranceCard from '@/Insurance/components/InsuranceCard';
 import { useCoverageStore } from '../stores/coverageStore';
 import { useEffect, useMemo, useState } from 'react';
+import ContractEditModal from '../components/ContractEditModal';
 
 export default function CoverageUpload() {
   const location = useLocation();
@@ -14,6 +15,22 @@ export default function CoverageUpload() {
   const [isSelectedCardOpen, setIsSelectedCardOpen] = useState(false);
   const isSituationValid = situation.trim().length > 0;
   const canSubmit = Boolean(selectedInsurance) && isSituationValid;
+  const allContracts = selectedInsurance?.specialContractNames ?? [];
+
+  //시뮬레이션에서만 사용할 특약 선택을 위한 것
+  const [simSelectedContracts, setSimSelectedContracts] = useState<string[]>(
+    []
+  );
+  const [isContractEditModalOpen, setIsContractEditModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (!selectedInsurance) {
+      setSimSelectedContracts([]);
+      return;
+    }
+    //기본은 원본 특약 그대로임
+    setSimSelectedContracts(selectedInsurance.specialContractNames ?? []);
+  }, [selectedInsurance]);
 
   useEffect(() => {
     const from = (location.state as { from?: string } | null)?.from;
@@ -24,16 +41,44 @@ export default function CoverageUpload() {
     }
   }, [location.state, clearSelectedInsurance]);
 
-  const specialNames = useMemo(() => {
-    return selectedInsurance?.specialContractNames ?? [];
-  }, [selectedInsurance]);
+  const contractObjects = useMemo(
+    () =>
+      (selectedInsurance?.specialContractNames ?? []).map((name) => ({
+        contract_name: name
+      })),
+    [selectedInsurance]
+  );
+
+  const toggleContract = (name: string) => {
+    setSimSelectedContracts((prev) =>
+      prev.includes(name) ? prev.filter((x) => x !== name) : [...prev, name]
+    );
+  };
+
+  const handleSubmit = () => {
+    if (!selectedInsurance) return;
+
+    const payload = {
+      insuranceId: selectedInsurance.insuranceId,
+      // 원본 보험 정보는 그대로
+      productName: selectedInsurance.productName,
+      // ✅ 시뮬레이션 특약만 별도로
+      selectedContractNames: simSelectedContracts,
+      situation
+    };
+
+    // 1) API 호출하거나
+    // await coverageApi.simulate(payload);
+
+    // 2) 결과 페이지로 넘기거나(react-router state)
+    navigate('/insurance/coverage/result', { state: payload });
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
       <div className="sticky top-0 z-50 bg-white">
         <Header title="보장 분석" onBack={() => navigate('/insurance')} />
       </div>
-
       <div className="flex flex-1 flex-col gap-10 px-9 py-8">
         <div className="flex flex-col gap-3">
           <div className="flex text-body-lg text-black">
@@ -74,11 +119,19 @@ export default function CoverageUpload() {
                 memo={selectedInsurance.memo}
                 createdAt={selectedInsurance.createdAt}
                 expandable
-                specialContractNames={specialNames}
+                specialContractNames={simSelectedContracts}
                 isOpen={isSelectedCardOpen}
                 onToggle={() => setIsSelectedCardOpen((prev) => !prev)}
                 hideDetailButton
               />
+
+              <button
+                type="button"
+                onClick={() => setIsContractEditModalOpen(true)}
+                className="w-full rounded-2xl bg-pink-20 py-3 text-body-md text-black shadow-[0_0_4px_0_rgba(0,0,0,0.20)] hover:bg-pink-40"
+              >
+                시뮬레이션 할 특약 편집하기
+              </button>
 
               <button
                 type="button"
@@ -112,10 +165,21 @@ export default function CoverageUpload() {
           type="button"
           className="text-body-bold-md mt-auto w-full rounded-full bg-pink-60 py-4 font-bold text-black hover:bg-pink-80 disabled:bg-gray-20 disabled:text-gray-60"
           disabled={!canSubmit}
+          onClick={handleSubmit}
         >
           결과 보기
         </button>
       </div>
+
+      <ContractEditModal
+        open={isContractEditModalOpen}
+        onClose={() => setIsContractEditModalOpen(false)}
+        contracts={contractObjects}
+        initialSelectedNames={simSelectedContracts}
+        onApply={({ selectedContracts }) =>
+          setSimSelectedContracts(selectedContracts.map((c) => c.contract_name))
+        }
+      />
     </div>
   );
 }
