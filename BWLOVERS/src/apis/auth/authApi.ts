@@ -8,6 +8,7 @@ type LoginWithNaverRequest = {
 type LoginResponse = {
   accessToken: string;
   refreshToken: string;
+  isNew: boolean;
 };
 
 export const authApi = {
@@ -17,5 +18,9 @@ export const authApi = {
       body
     );
     return data;
+  },
+
+  async withdraw() {
+    await axiosInstance.delete('/users/withdraw');
   }
 };

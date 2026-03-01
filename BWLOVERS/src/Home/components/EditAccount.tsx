@@ -1,17 +1,33 @@
 import LabeledInput from '@/SignUp/components/LabeledInput';
 import ProfileImg from '@/SignUp/components/ProfileImg';
-import TestProfile from '@/assets/common/profileTest.png';
 import ActionButton from '@/common/components/ActionButton';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useUserAccountStore } from '@/SignUp/stores/userAccountStore';
+import SingleBtnModal from '@/common/components/SingleBtnModal';
 
 export default function EditAccount() {
-  const userProfileUrl: string | null = TestProfile;
+  const { me, fetchMe, updateMe } = useUserAccountStore();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [nickname, setNickname] = useState('');
 
-  const [nickname, setNickname] = useState('봉원이');
-  const [email] = useState('abc1234@naver.com');
-  const [phone] = useState('010-1234-5678');
+  useEffect(() => {
+    fetchMe();
+  }, [fetchMe]);
+
+  useEffect(() => {
+    if (!me) return;
+    setNickname((prev) => (prev ? prev : (me.username ?? '')));
+  }, [me]);
+
+  const email = me?.email ?? '';
+  const phone = me?.phone ?? '';
+  const userProfileUrl = me?.profileImageUrl ?? null;
+
+  const imageUrl = useMemo(() => {
+    return previewUrl ?? userProfileUrl ?? null;
+  }, [previewUrl, userProfileUrl]);
 
   const handleProfileChange = (file: File) => {
     const nextUrl = URL.createObjectURL(file);
@@ -23,6 +39,19 @@ export default function EditAccount() {
 
     //나중에 업로드 api 연결
     // uploadProfileImage(file);
+  };
+
+  const handleEdit = async () => {
+    if (!me || !isNicknameValid) return;
+
+    const profileImageUrlToSend = me.profileImageUrl ?? null;
+
+    await updateMe({
+      username: nickname.trim(),
+      profileImageUrl: profileImageUrlToSend
+    });
+
+    setIsModalOpen(true);
   };
 
   const isNicknameValid = nickname.trim().length > 0 && nickname.length <= 10;
@@ -52,8 +81,19 @@ export default function EditAccount() {
           label="수정"
           variant="primary"
           disabled={!isNicknameValid}
+          onClick={handleEdit}
         />
       </div>
+
+      <SingleBtnModal
+        open={isModalOpen}
+        title="수정 완료"
+        content={`회원 정보가 수정되었습니다.`}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={() => {
+          setIsModalOpen(false);
+        }}
+      />
     </>
   );
 }

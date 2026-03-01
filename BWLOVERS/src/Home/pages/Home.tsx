@@ -7,10 +7,25 @@ import SavedInsurance from '../components/SavedInsurance';
 import SavedReport from '../components/SavedReport';
 import HomeMenuItem from '../components/HomeMenuItem';
 import { useNavigate } from 'react-router-dom';
+import { useUserAccountStore } from '@/SignUp/stores/userAccountStore';
+import { useEffect, useState } from 'react';
+import DoubleBtnModal from '@/common/components/DoubleBtnModal';
+import { tokenStorage } from '@/apis/auth/tokenStorage';
+import { authApi } from '@/apis/auth/authApi';
 
 export default function Home() {
-  const user = '봉원이지롱';
   const navigate = useNavigate();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const { me, fetchMe, logout } = useUserAccountStore();
+
+  useEffect(() => {
+    if (!me) fetchMe();
+  }, [me, fetchMe]);
+
+  const username = me?.username;
+  const profileImageUrl = me?.profileImageUrl ?? null;
 
   return (
     <>
@@ -20,10 +35,10 @@ export default function Home() {
         <div className="z-10 mx-9 mt-13 flex flex-row items-center justify-between">
           <div className="text-heading-lg text-black">
             안녕하세요,
-            <br /> {user} 님!
+            <br /> {username} 님!
           </div>
           <div className="flex gap-3">
-            <HomeProfileImg />
+            <HomeProfileImg imageUrl={profileImageUrl} />
             <button onClick={() => navigate('/profile/edit')}>
               <ForwardIcon className="h-8 w-8 rounded-full hover:bg-gray-20" />
             </button>
@@ -70,13 +85,75 @@ export default function Home() {
           <div className="ml-2.5 text-heading-sm text-black">기타</div>
           <div>
             <HomeMenuItem label="문의하기" />
-            <HomeMenuItem label="로그아웃" />
-            <HomeMenuItem label="탈퇴하기" />
+            <HomeMenuItem
+              label="로그아웃"
+              onClick={() => setIsLogoutModalOpen(true)}
+            />
+            <HomeMenuItem
+              label="탈퇴하기"
+              onClick={() => setIsWithdrawModalOpen(true)}
+            />
           </div>
         </div>
       </div>
 
       <NavBar />
+
+      <DoubleBtnModal
+        open={isLogoutModalOpen}
+        title="로그아웃 하시겠습니까?"
+        cancelLabel="아니오"
+        confirmLabel="예"
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={() => {
+          tokenStorage.clear();
+          logout();
+          setIsLogoutModalOpen(false);
+          navigate('/');
+        }}
+      />
+
+      <DoubleBtnModal
+        open={isWithdrawModalOpen}
+        title="정말 탈퇴 하시겠습니까?"
+        content="탈퇴 후엔 모든 정보가 삭제됩니다."
+        cancelLabel="취소"
+        confirmLabel="예"
+        onClose={() => setIsWithdrawModalOpen(false)}
+        onConfirm={() => {
+          setIsWithdrawModalOpen(false);
+          setIsConfirmModalOpen(true);
+        }}
+      />
+
+      <DoubleBtnModal
+        open={isConfirmModalOpen}
+        title="탈퇴 의사 최종 확인"
+        content={`탈퇴 시 모든 정보가 삭제되며, \n복구할 수 없습니다.\n ⚠️ 입력 제출 시 탈퇴가 완료 됩니다.`}
+        cancelLabel="취소"
+        confirmLabel="확인"
+        requireConfirmText
+        confirmText="확인했습니다."
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={async () => {
+          try {
+            await authApi.withdraw();
+
+            //성공 후 토큰/상태 정리
+            tokenStorage.clear();
+            logout();
+
+            // 모달 닫고 이동
+            setIsConfirmModalOpen(false);
+            window.location.replace('/');
+          } catch (e) {
+            console.error('withdraw failed:', e);
+            window.alert(
+              '시스템 오류가 발생했습니다. \n 잠시 후 다시 시도해주세요.'
+            );
+          }
+        }}
+      />
     </>
   );
 }

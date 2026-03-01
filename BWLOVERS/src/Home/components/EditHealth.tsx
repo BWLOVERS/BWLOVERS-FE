@@ -1,8 +1,21 @@
 import ActionButton from '@/common/components/ActionButton';
-import HealthForm from '@/SignUp/components/HealthForm';
-import { useCallback, useMemo, useState } from 'react';
+import SingleBtnModal from '@/common/components/SingleBtnModal';
+import HealthForm, {
+  type HealthFormValue
+} from '@/SignUp/components/HealthForm';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { healthStatusApi } from '@/apis/users/healthStatusApi';
+import { useHealthStatusStore } from '@/SignUp/stores/healthStatusStore';
 
 export default function EditHealth() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const v1 = useHealthStatusStore((s) => s.v1);
+  const v2 = useHealthStatusStore((s) => s.v2);
+  const v3 = useHealthStatusStore((s) => s.v3);
+  const setVariantValue = useHealthStatusStore((s) => s.setVariantValue);
+  const setAll = useHealthStatusStore((s) => s.setAll);
+
   const [healthCompleted, setHealthCompleted] = useState<
     Record<1 | 2 | 3, boolean>
   >({
@@ -25,13 +38,44 @@ export default function EditHealth() {
     []
   );
 
-  const handleSave = () => {
+  const handleHealthValueChange = useCallback(
+    (variant: 1 | 2 | 3, value: HealthFormValue) => {
+      setVariantValue(variant, value);
+    },
+    [setVariantValue]
+  );
+
+  const hasLoaded = useHealthStatusStore((s) => s.hasLoaded);
+
+  useEffect(() => {
+    if (hasLoaded) return;
+
+    const run = async () => {
+      try {
+        const draft = await healthStatusApi.getHealthStatusDraft();
+        setAll(draft);
+      } catch (e) {
+        if (import.meta.env.DEV) console.log('[GET health-status failed]', e);
+      }
+    };
+
+    run();
+  }, [hasLoaded, setAll]);
+
+  const handleSave = async () => {
     if (!isAllCompleted) return;
 
-    // ✅ 나중에 PATCH API 연결할 payload
-    console.log('EDIT HEALTH SAVE PAYLOAD:', healthCompleted);
+    const payload = { v1, v2, v3 };
+    if (import.meta.env.DEV) console.log('EDIT HEALTH SAVE PAYLOAD:', payload);
 
-    // 저장 성공 후 토스트/모달 등 처리(추후)
+    try {
+      await healthStatusApi.putHealthStatusDraft(payload);
+      setAll(payload);
+
+      setIsModalOpen(true);
+    } catch (e) {
+      if (import.meta.env.DEV) console.log('[PUT health-status failed]', e);
+    }
   };
 
   return (
@@ -42,6 +86,8 @@ export default function EditHealth() {
           <HealthForm
             variant={1}
             onCompleteChange={handleHealthCompleteChange}
+            onValueChange={handleHealthValueChange}
+            value={v1}
           />
         </div>
 
@@ -53,6 +99,8 @@ export default function EditHealth() {
           <HealthForm
             variant={2}
             onCompleteChange={handleHealthCompleteChange}
+            onValueChange={handleHealthValueChange}
+            value={v2}
           />
         </div>
 
@@ -61,6 +109,8 @@ export default function EditHealth() {
           <HealthForm
             variant={3}
             onCompleteChange={handleHealthCompleteChange}
+            onValueChange={handleHealthValueChange}
+            value={v3}
           />
         </div>
       </div>
@@ -73,6 +123,14 @@ export default function EditHealth() {
           disabled={!isAllCompleted}
         />
       </div>
+
+      <SingleBtnModal
+        open={isModalOpen}
+        title="수정 완료"
+        content={`회원 정보가 수정되었습니다.`}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={() => setIsModalOpen(false)}
+      />
     </>
   );
 }
