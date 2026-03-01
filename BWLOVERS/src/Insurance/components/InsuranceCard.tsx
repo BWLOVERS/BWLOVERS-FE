@@ -25,9 +25,13 @@ type InsuranceCardProps = {
   isOpen?: boolean;
   onToggle?: () => void;
 
-  // ✅ MyInsuranceList에서만: more 메뉴
+  // MyInsuranceList에서만: more 메뉴
   showMoreIcon?: boolean;
   onDelete?: () => void;
+
+  //보장 분석 -> 보험 선택으로 진입 시
+  isSelected?: boolean;
+  hideDetailButton?: boolean;
 };
 
 function ChevronDown({ className = '' }: { className?: string }) {
@@ -70,7 +74,10 @@ export default function InsuranceCard({
   onToggle,
 
   showMoreIcon = false,
-  onDelete
+  onDelete,
+
+  isSelected = false,
+  hideDetailButton = false
 }: InsuranceCardProps) {
   const navigate = useNavigate();
 
@@ -95,7 +102,7 @@ export default function InsuranceCard({
     handleCardClick();
   };
 
-  // ✅ More dropdown
+  // More dropdown
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -114,7 +121,7 @@ export default function InsuranceCard({
   }, [isMenuOpen]);
 
   const handleMoreClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // ✅ 카드 클릭(아코디언 토글) 막기
+    e.stopPropagation();
     setIsMenuOpen((prev) => !prev);
   };
 
@@ -135,7 +142,7 @@ export default function InsuranceCard({
               onKeyDown: handleCardKeyDown
             }
           : {})}
-        className={`flex w-full flex-col rounded-[0.9375rem] bg-pink-20 px-5 py-[0.94rem] shadow-[0_0_4px_0_rgba(0,0,0,0.10)] ${
+        className={`border-x-2 border-t-2 ${isSelected ? 'border-pink-60' : 'border-transparent'} flex w-full flex-col rounded-[0.9375rem] bg-pink-20 px-5 py-[0.94rem] shadow-[0_0_4px_0_rgba(0,0,0,0.10)] ${
           isClickable || hasExpandableArea
             ? 'cursor-pointer hover:bg-pink-40'
             : ''
@@ -150,7 +157,7 @@ export default function InsuranceCard({
               </p>
             </div>
 
-            {/* ✅ 우상단 아이콘 영역 */}
+            {/* 우상단 아이콘(더보기) */}
             <div className="relative ml-4 shrink-0" ref={menuRef}>
               {showMoreIcon ? (
                 <>
@@ -224,19 +231,19 @@ export default function InsuranceCard({
       {/* 내가 저장한 보험 페이지에서 사용하는 추가 부분 */}
       {hasExpandableArea && (
         <div
-          className={`overflow-hidden rounded-b-[0.9375rem] bg-white shadow-[0_0_4px_0_rgba(0,0,0,0.10)] transition-[max-height] duration-300 ease-in-out ${
-            isOpen ? 'max-h-125' : 'max-h-0'
-          }`}
+          className={`overflow-hidden rounded-b-[0.9375rem] border-2 border-t-0 bg-white shadow-[0_0_4px_0_rgba(0,0,0,0.10)] transition-[max-height] duration-300 ease-in-out ${isSelected ? 'border-pink-60' : 'border-transparent'} ${isOpen ? 'max-h-125' : 'max-h-0'}`}
         >
           <div className="px-5 py-4">
             <div className="flex items-center justify-between text-body-sm text-black">
               <span className="text-body-bold-md">선택 특약</span>
-              <button
-                onClick={() => navigate('/myinsurance/detail')}
-                className="rounded-full bg-gray-10 px-2 text-gray-60"
-              >
-                자세히 &gt;
-              </button>
+              {!hideDetailButton && (
+                <button
+                  onClick={() => navigate('/myinsurance/detail')}
+                  className="rounded-full bg-gray-10 px-2 text-gray-60"
+                >
+                  자세히 &gt;
+                </button>
+              )}
             </div>
 
             <ul className="text-gray-90 mt-3 flex flex-col gap-2 text-body-sm">

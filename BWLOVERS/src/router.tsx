@@ -13,9 +13,12 @@ import RecommendResultDetail from './Insurance/pages/RecommendResultDetail';
 import EditProfile from './Home/pages/EditProfile';
 import ExplainUpload from './Insurance/pages/ExplainUpload';
 import MyInsuranceList from './Home/pages/MyInsuranceList';
-import Loading from './Insurance/pages/Loading';
 import MyInsuranceDetail from './Home/pages/MyInsuranceDetail';
 import NaverCallback from './Login/pages/NaverCallback';
+import ExplainResult from './Insurance/pages/ExplainResult';
+import ExplainLoading from './Insurance/pages/ExplainLoading';
+import CoverageResult from './Insurance/pages/CoverageResult';
+import CoverageUpload from './Insurance/pages/CoverageUpload';
 const router = createBrowserRouter([
   {
     element: <MainLayout />,
@@ -31,6 +34,10 @@ const router = createBrowserRouter([
       { path: '/signup/health', element: <SignUpHealth /> },
       { path: '/home', element: <Home /> },
       { path: '/myinsurance', element: <MyInsuranceList /> },
+      {
+        path: '/myinsurance/select',
+        element: <MyInsuranceList mode="select" />
+      },
       { path: '/myinsurance/detail', element: <MyInsuranceDetail /> },
       { path: '/profile/edit', element: <EditProfile /> },
       { path: '/insurance', element: <InsuranceMain /> },
@@ -39,10 +46,12 @@ const router = createBrowserRouter([
         path: '/insurance/recommend/result/detail',
         element: <RecommendResultDetail />
       },
+      { path: '/insurance/coverage', element: <CoverageUpload /> },
+      { path: '/insurance/coverage/result', element: <CoverageResult /> },
       { path: '/insurance/explain/upload', element: <ExplainUpload /> },
-
-      { path: '/about', element: <AboutUs /> },
-      { path: '/loading', element: <Loading /> }
+      { path: '/insurance/explain/result', element: <ExplainResult /> },
+      { path: '/insurance/explain/loading', element: <ExplainLoading /> },
+      { path: '/about', element: <AboutUs /> }
     ]
   }
 ]);
