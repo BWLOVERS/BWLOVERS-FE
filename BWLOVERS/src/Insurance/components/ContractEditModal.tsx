@@ -1,28 +1,32 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import ActionButtonMini from '@/common/components/ActionButtonMini';
 import CheckBoxIconBlank from '@/assets/common/icon_checkbox_blank.svg?react';
 import CheckBoxIconFilled from '@/assets/common/icon_checkbox_check.svg?react';
+import AlertCircleIcon from '@/assets/Insurance/icon_alertCircle.svg?react';
 
 type SpecialContract = { contract_name: string };
 
-type SaveResultModalProps = {
+type ContractEditModalProps = {
   open: boolean;
   contracts: SpecialContract[];
+  initialSelectedNames?: string[];
   onClose: () => void;
-  onSave?: (payload: {
-    selectedContracts: SpecialContract[];
-    memo: string;
-  }) => void;
+  onApply?: (payload: { selectedContracts: SpecialContract[] }) => void;
 };
 
-export default function SaveResultModal({
+export default function ContractEditModal({
   open,
   contracts,
+  initialSelectedNames,
   onClose,
-  onSave
-}: SaveResultModalProps) {
+  onApply
+}: ContractEditModalProps) {
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
-  const [memo, setMemo] = useState('');
+
+  useEffect(() => {
+    if (!open) return;
+    setSelected(new Set(initialSelectedNames ?? []));
+  }, [open, initialSelectedNames]);
 
   const selectedContracts = useMemo(
     () => contracts.filter((c) => selected.has(c.contract_name)),
@@ -40,8 +44,8 @@ export default function SaveResultModal({
     });
   };
 
-  const handleSave = () => {
-    onSave?.({ selectedContracts, memo });
+  const handleApply = () => {
+    onApply?.({ selectedContracts });
     onClose();
   };
 
@@ -56,12 +60,15 @@ export default function SaveResultModal({
         className="flex w-73.75 flex-col items-center gap-7 rounded-20 bg-white px-[1.44rem] py-[1.06rem] shadow-[0_0_4px_4px_rgba(255,173,244,0.25)]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex w-full flex-col gap-4">
+        <div className="flex w-full flex-col gap-2">
           <div className="flex w-full flex-row gap-1.5 text-body-md text-black">
-            특약 선택 <p className="text-warning-100">*</p>
+            특약 선택
+          </div>
+          <div className="flex flex-row items-center gap-1.5 text-caption-md text-gray-60">
+            <AlertCircleIcon /> 이 편집은 이번 분석 1회에 한하여 유효합니다.
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="mt-2 flex flex-col gap-2">
             {contracts.map((c) => {
               const isChecked = selected.has(c.contract_name);
               const Icon = isChecked ? CheckBoxIconFilled : CheckBoxIconBlank;
@@ -81,20 +88,6 @@ export default function SaveResultModal({
           </div>
         </div>
 
-        <div className="flex w-full flex-col gap-2">
-          <div className="text-body-md text-black">메모</div>
-          <textarea
-            value={memo}
-            onChange={(e) => setMemo(e.target.value)}
-            maxLength={20}
-            className="h-20 resize-none rounded-2xl bg-gray-20 p-4 text-body-sm text-black"
-          />
-
-          <div className="text-right text-caption-sm text-gray-60">
-            {memo.length} / 20
-          </div>
-        </div>
-
         <div className="flex w-full flex-row items-center justify-end gap-3">
           <ActionButtonMini
             label="취소"
@@ -102,8 +95,8 @@ export default function SaveResultModal({
             onClick={onClose}
           />
           <ActionButtonMini
-            label="저장"
-            onClick={handleSave}
+            label="적용"
+            onClick={handleApply}
             disabled={selected.size === 0}
           />
         </div>
