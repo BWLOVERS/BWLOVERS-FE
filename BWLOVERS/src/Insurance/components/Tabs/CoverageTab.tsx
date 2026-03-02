@@ -1,7 +1,9 @@
 import WaveBackground from '@/assets/Insurance/bg_wave_wide.svg?react';
 import NextIcon from '@/assets/Insurance/icon_arrow_next.svg?react';
+import { useNavigate } from 'react-router-dom';
 
 export default function CoverageTab() {
+  const navigate = useNavigate();
   return (
     <section className="relative flex-1 overflow-hidden pb-24">
       <WaveBackground className="absolute top-0 left-0" />
@@ -17,6 +19,7 @@ export default function CoverageTab() {
 
         <button
           type="button"
+          onClick={() => navigate('/insurance/coverage')}
           className="rounded-2xl bg-pink-40 px-10 py-5 text-display-sm text-black shadow-[2px_3px_4px_0_rgba(0,0,0,0.25)] hover:bg-pink-60"
         >
           <div className="flex flex-row items-center justify-center gap-6">

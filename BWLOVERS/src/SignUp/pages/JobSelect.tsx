@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import jobList from '@/SignUp/data/job_list.json';
 import type { SignUpBasicInfoState } from '../types/signupBasicInfo';
-import { usePregnancyInfoStore } from '@/stores/pregnancyInfoStore';
+import { usePregnancyInfoStore } from '@/SignUp/stores/pregnancyInfoStore';
 
 type JobNode = {
   label: string;

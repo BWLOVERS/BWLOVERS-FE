@@ -30,7 +30,7 @@ export default function NaverCallback() {
         return;
       }
 
-      // ✅ state 검증
+      // state 검증
       const storedState = sessionStorage.getItem('naver_oauth_state');
       if (!storedState || storedState !== state) {
         console.error('Invalid state', { storedState, state });
@@ -40,15 +40,17 @@ export default function NaverCallback() {
       sessionStorage.removeItem('naver_oauth_state');
 
       try {
-        const { accessToken, refreshToken } = await authApi.loginWithNaver({
-          code,
-          state
-        });
+        const { accessToken, refreshToken, isNew } =
+          await authApi.loginWithNaver({
+            code,
+            state
+          });
 
         tokenStorage.set(accessToken, refreshToken);
 
-        // 임시: 가입 플로우로
-        navigate('/signup/account', { replace: true });
+        //이미 가입한 사용자는 home으로 이동, 신규 유저는 가입 절차
+        if (isNew) navigate('/signup/account', { replace: true });
+        else navigate('/home', { replace: true });
       } catch (e) {
         console.error(e);
         navigate('/', { replace: true });

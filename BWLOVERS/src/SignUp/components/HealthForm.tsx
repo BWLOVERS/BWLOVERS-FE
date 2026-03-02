@@ -10,19 +10,29 @@ import {
   type ExtraState as ExtraStateForValidation
 } from '../utils/healthFormValidation';
 
-type ExtraState = {
+export type ExtraState = {
   cured: 'yes' | 'no' | null;
   lastDate: string;
+};
+
+export type HealthFormValue = {
+  noneChecked: boolean;
+  selected: Record<string, boolean>;
+  extraByDisease: Record<string, ExtraState>;
 };
 
 type HealthFormProps = {
   variant: HealthVariant;
   onCompleteChange?: (variant: HealthVariant, completed: boolean) => void;
+  onValueChange?: (variant: HealthVariant, value: HealthFormValue) => void;
+
+  // ✅ 추가: 외부에서 값 주입(조회/store 연동용)
+  value?: HealthFormValue;
 };
 
-function onlyDigitsMax8(value: string) {
+function onlyDigitsMax6(value: string) {
   const digits = value.replace(/\D/g, '');
-  return digits.slice(0, 8);
+  return digits.slice(0, 6);
 }
 
 function CheckboxIcon({ checked }: { checked: boolean }) {
@@ -61,16 +71,30 @@ function CheckItem({
 
 export default function HealthForm({
   variant,
-  onCompleteChange
+  onCompleteChange,
+  onValueChange,
+  value
 }: HealthFormProps) {
   const { groups, hasExtraInputs, isSecondCategory } = FORM_CONFIG[variant];
 
-  const [selected, setSelected] = useState<Record<string, boolean>>({});
-  const [extraByDisease, setExtraByDisease] = useState<
+  // ✅ controlled 모드 여부
+  const isControlled = value !== undefined;
+
+  // (uncontrolled용) 내부 state는 기존대로 유지
+  const [selectedState, setSelectedState] = useState<Record<string, boolean>>(
+    {}
+  );
+  const [extraByDiseaseState, setExtraByDiseaseState] = useState<
     Record<string, ExtraState>
   >({});
-  const [etcText, setEtcText] = useState('');
-  const [noneChecked, setNoneChecked] = useState(false);
+  const [noneCheckedState, setNoneCheckedState] = useState(false);
+
+  // ✅ 렌더링/검증에 사용하는 “진짜 값”
+  const selected = isControlled ? value.selected : selectedState;
+  const extraByDisease = isControlled
+    ? value.extraByDisease
+    : extraByDiseaseState;
+  const noneChecked = isControlled ? value.noneChecked : noneCheckedState;
 
   const selectedDiseases = useMemo(
     () => Object.keys(selected).filter((k) => selected[k]),
@@ -90,7 +114,6 @@ export default function HealthForm({
       isSecondCategory,
       noneChecked,
       selectedDiseases,
-      etcText,
       extraByDisease: extraForValidation
     });
   }, [
@@ -98,7 +121,6 @@ export default function HealthForm({
     isSecondCategory,
     noneChecked,
     selectedDiseases,
-    etcText,
     extraByDisease
   ]);
 
@@ -106,66 +128,100 @@ export default function HealthForm({
     onCompleteChange?.(variant, isCompleted);
   }, [onCompleteChange, variant, isCompleted]);
 
-  const formBorder = isCompleted ? 'border-[#FFBECD]' : 'border-[#A9A9A9]';
+  // ✅ 기존 코드의 “state 변화 감지 → onValueChange 호출”은 uncontrolled에서만 실행
+  // controlled에서는 이 effect가 store를 빈 값으로 덮어쓰는 문제가 생길 수 있음
+  useEffect(() => {
+    if (isControlled) return;
+    onValueChange?.(variant, {
+      noneChecked: noneCheckedState,
+      selected: selectedState,
+      extraByDisease: extraByDiseaseState
+    });
+  }, [
+    isControlled,
+    onValueChange,
+    variant,
+    noneCheckedState,
+    selectedState,
+    extraByDiseaseState
+  ]);
+
+  // ✅ controlled/uncontrolled 공통: nextValue 만들어 올리는 helper
+  const emitNext = (next: HealthFormValue) => {
+    onValueChange?.(variant, next);
+
+    // uncontrolled일 때만 내부 state도 갱신
+    if (!isControlled) {
+      setNoneCheckedState(next.noneChecked);
+      setSelectedState(next.selected);
+      setExtraByDiseaseState(next.extraByDisease);
+    }
+  };
+
+  const formBorder = isCompleted ? 'border-[#FFBECD]' : 'border-[#d1d1d1]';
 
   const toggleDisease = (disease: string) => {
     if (noneChecked) return;
 
-    setSelected((prev) => {
-      const nextChecked = !prev[disease];
-      const next = { ...prev, [disease]: nextChecked };
+    const nextChecked = !selected[disease];
+    const nextSelected = { ...selected, [disease]: nextChecked };
 
-      if (!nextChecked) {
-        setExtraByDisease((prevExtra) => {
-          const copied = { ...prevExtra };
-          delete copied[disease];
-          return copied;
-        });
-      } else {
-        setExtraByDisease((prevExtra) => ({
-          ...prevExtra,
-          [disease]: prevExtra[disease] ?? {
-            cured: null,
-            extra2: '',
-            lastDate: ''
-          }
-        }));
-      }
+    let nextExtraByDisease = { ...extraByDisease };
 
-      return next;
+    if (!nextChecked) {
+      delete nextExtraByDisease[disease];
+    } else {
+      nextExtraByDisease[disease] = nextExtraByDisease[disease] ?? {
+        cured: null,
+        lastDate: ''
+      };
+    }
+
+    emitNext({
+      noneChecked,
+      selected: nextSelected,
+      extraByDisease: nextExtraByDisease
     });
   };
 
   const toggleNone = () => {
-    setNoneChecked((prev) => {
-      const next = !prev;
-      if (next) {
-        setSelected({});
-        setExtraByDisease({});
-        setEtcText('');
-      }
-      return next;
+    const nextNone = !noneChecked;
+
+    if (nextNone) {
+      emitNext({
+        noneChecked: true,
+        selected: {},
+        extraByDisease: {}
+      });
+      return;
+    }
+
+    emitNext({
+      noneChecked: false,
+      selected,
+      extraByDisease
     });
   };
 
   const updateExtra = (disease: string, patch: Partial<ExtraState>) => {
-    setExtraByDisease((prev) => ({
-      ...prev,
-      [disease]: {
-        ...(prev[disease] ?? { cured: null, lastDate: '' }),
-        ...patch
-      }
-    }));
+    const prev = extraByDisease[disease] ?? { cured: null, lastDate: '' };
+    const nextExtraByDisease = {
+      ...extraByDisease,
+      [disease]: { ...prev, ...patch }
+    };
+
+    emitNext({
+      noneChecked,
+      selected,
+      extraByDisease: nextExtraByDisease
+    });
   };
 
   return (
-    //폼 전체
     <section
       className={`mt-3.5 flex w-76 flex-col items-center justify-center self-stretch rounded-[0.9375rem] border-[0.1rem] ${formBorder} px-5 py-5.5`}
     >
-      {/*폼 내용*/}
       <div className="flex w-full flex-col gap-2.5">
-        {/*질병 항목들*/}
         {groups.map((group) => {
           const selectedInGroup = group.diseases.filter((d) => !!selected[d]);
 
@@ -190,7 +246,6 @@ export default function HealthForm({
                 ))}
               </div>
 
-              {/* 선택된 항목 추가 질문 */}
               {hasExtraInputs && !noneChecked && selectedInGroup.length > 0 ? (
                 <div className="flex w-full flex-col items-start gap-2.5 self-stretch pt-2.5">
                   {selectedInGroup.map((disease) => {
@@ -209,7 +264,7 @@ export default function HealthForm({
                         <div className="flex w-full flex-col items-start gap-1.25 self-stretch">
                           <div className="flex w-full items-center justify-between text-caption-md text-black">
                             <span>
-                              •{' '}
+                              •
                               {isSecondCategory
                                 ? '현재 약물 복용 여부'
                                 : '현재 완치 여부'}
@@ -242,17 +297,17 @@ export default function HealthForm({
 
                           {!isSecondCategory ? (
                             <div className="flex w-full items-center justify-between text-caption-md text-black">
-                              <span>• 마지막 치료, 진료 날짜</span>
+                              <span>• 마지막 치료, 진료 월</span>
                               <input
                                 value={extra.lastDate}
                                 onChange={(e) =>
                                   updateExtra(disease, {
-                                    lastDate: onlyDigitsMax8(e.target.value)
+                                    lastDate: onlyDigitsMax6(e.target.value)
                                   })
                                 }
                                 inputMode="numeric"
-                                maxLength={8}
-                                placeholder="날짜 8자리 (ex. 20250101)"
+                                maxLength={6}
+                                placeholder="연,월만 입력 (ex. 202501)"
                                 className="flex w-28 items-center justify-center rounded-lg border border-gray-20 bg-white px-[0.59375rem] py-1.25 text-caption-xs text-black placeholder:text-gray-40"
                               />
                             </div>
@@ -266,20 +321,6 @@ export default function HealthForm({
             </div>
           );
         })}
-
-        <div className="flex w-full flex-col items-start gap-2.5 border-b border-[#E4E4E4] pb-4">
-          <div className="text-body-bold-sm flex h-5 flex-col justify-center self-stretch text-black">
-            기타
-          </div>
-
-          <input
-            value={etcText}
-            onChange={(e) => setEtcText(e.target.value)}
-            disabled={noneChecked}
-            placeholder="직접 입력"
-            className="flex w-full items-center self-stretch rounded-[0.625rem] border border-gray-20 bg-white px-3 py-1.75 text-caption-sm text-black placeholder:text-gray-40 disabled:opacity-40"
-          />
-        </div>
 
         <div className="mt-3 flex items-center gap-0.5">
           <button

@@ -3,19 +3,27 @@ import Header from '@/common/components/Header';
 import ProgressBar from '@/common/components/ProgressBar';
 import { useNavigate } from 'react-router-dom';
 import Notice from '../components/Notice';
-import HealthForm from '../components/HealthForm';
+import HealthForm, { type HealthFormValue } from '../components/HealthForm';
 import { useCallback, useMemo, useState } from 'react';
+import {
+  useHealthStatusStore,
+  type HealthStatusDraft
+} from '@/SignUp/stores/healthStatusStore';
+import { healthStatusApi } from '@/apis/users/healthStatusApi';
+import SingleBtnModal from '@/common/components/SingleBtnModal';
 
 export default function SignUpHealth() {
   const navigate = useNavigate();
-
-  const handleDone = () => {
-    navigate('/home');
-  };
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleBack = () => {
     navigate('/signup/info');
   };
+
+  const v1 = useHealthStatusStore((s) => s.v1);
+  const v2 = useHealthStatusStore((s) => s.v2);
+  const v3 = useHealthStatusStore((s) => s.v3);
+  const setVariantValue = useHealthStatusStore((s) => s.setVariantValue);
 
   const [healthCompleted, setHealthCompleted] = useState<
     Record<1 | 2 | 3, boolean>
@@ -39,6 +47,28 @@ export default function SignUpHealth() {
     []
   );
 
+  const handleHealthValueChange = useCallback(
+    (variant: 1 | 2 | 3, value: HealthFormValue) => {
+      setVariantValue(variant, value);
+    },
+    [setVariantValue]
+  );
+
+  const handleDone = useCallback(async () => {
+    const draft: HealthStatusDraft = { v1, v2, v3 };
+
+    if (import.meta.env.DEV) {
+      console.log('[SignUpHealth] submit draft =', draft);
+    }
+
+    try {
+      await healthStatusApi.postHealthStatus(draft);
+      setIsModalOpen(true);
+    } catch (e) {
+      if (import.meta.env.DEV) console.log('[POST health-status failed]', e);
+    }
+  }, [v1, v2, v3, navigate]);
+
   return (
     <>
       <Header title="산모 건강 상태" />
@@ -51,6 +81,7 @@ export default function SignUpHealth() {
             <HealthForm
               variant={1}
               onCompleteChange={handleHealthCompleteChange}
+              onValueChange={handleHealthValueChange}
             />
           </div>
 
@@ -62,6 +93,7 @@ export default function SignUpHealth() {
             <HealthForm
               variant={2}
               onCompleteChange={handleHealthCompleteChange}
+              onValueChange={handleHealthValueChange}
             />
           </div>
 
@@ -70,6 +102,7 @@ export default function SignUpHealth() {
             <HealthForm
               variant={3}
               onCompleteChange={handleHealthCompleteChange}
+              onValueChange={handleHealthValueChange}
             />
           </div>
         </div>
@@ -94,6 +127,17 @@ export default function SignUpHealth() {
           <ProgressBar currentStep={3} />
         </div>
       </div>
+
+      <SingleBtnModal
+        open={isModalOpen}
+        title="회원 가입 완료"
+        content={`회원 가입이 완료 되었습니다. \n유저 정보는 마이페이지에서 수정 가능합니다.`}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={() => {
+          setIsModalOpen(false);
+          navigate('/home');
+        }}
+      />
     </>
   );
 }

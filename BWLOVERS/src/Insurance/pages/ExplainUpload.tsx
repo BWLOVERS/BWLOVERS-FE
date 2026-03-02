@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import Header from '@/common/components/Header';
 import AddIcon from '@/assets/Insurance/icon_add.svg?react';
 import PhotoSourceModal from '../components/PhotoSourceModal';
+import { ocrApi } from '@/apis/ocr/ocrApi';
+import { useNavigate } from 'react-router-dom';
+import { compressImageFile } from '../utils/compressImage';
 
 type PreviewItem = {
   id: string;
@@ -9,9 +12,10 @@ type PreviewItem = {
   url: string;
 };
 
-const MAX_IMAGES = 10;
+const MAX_IMAGES = 5;
 
 export default function ExplainUpload() {
+  const navigate = useNavigate();
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -77,8 +81,37 @@ export default function ExplainUpload() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleSubmit = () => {
-    console.log(images.map((i) => i.file));
+  const handleSubmit = async () => {
+    try {
+      const originalFiles = images.map((img) => img.file);
+
+      //업로드 전 압축
+      const compressedFiles = await Promise.all(
+        originalFiles.map((file) =>
+          compressImageFile(file, {
+            maxWidth: 1800,
+            maxHeight: 1800,
+            quality: 0.8
+          })
+        )
+      );
+
+      const created = await ocrApi.createJob(compressedFiles);
+
+      navigate('/insurance/explain/loading', {
+        state: { jobId: created.jobId }
+      });
+    } catch (err: any) {
+      console.error('OCR upload error:', err);
+
+      const status = err?.response?.status;
+      const data = err?.response?.data;
+
+      window.alert(
+        `업로드 실패\nstatus: ${status ?? 'unknown'}\n` +
+          `${typeof data === 'string' ? data : JSON.stringify(data ?? {}, null, 2)}`
+      );
+    }
   };
 
   return (
@@ -92,7 +125,7 @@ export default function ExplainUpload() {
           보험 문서 사진 업로드 (최대 {MAX_IMAGES}장)
         </div>
 
-        {/* 숨김 file input: 앨범/파일 선택 */}
+        {/* 앨범/파일 선택 */}
         <input
           ref={uploadInputRef}
           type="file"
@@ -102,7 +135,7 @@ export default function ExplainUpload() {
           className="hidden"
         />
 
-        {/* 숨김 file input: 카메라 촬영 유도 (안 되면 선택 화면으로 fallback 될 수 있음) */}
+        {/*카메라 촬영 유도 (안 되면 선택 화면으로 fallback) */}
         <input
           ref={cameraInputRef}
           type="file"
@@ -154,7 +187,7 @@ export default function ExplainUpload() {
         <button
           type="button"
           onClick={handleSubmit}
-          className="text-body-bold-md mt-auto w-full rounded-full bg-pink-60 py-4 font-bold text-black disabled:bg-gray-20 disabled:text-gray-60"
+          className="text-body-bold-md mt-auto w-full rounded-full bg-pink-60 py-4 font-bold text-black hover:bg-pink-80 disabled:bg-gray-20 disabled:text-gray-60"
           disabled={images.length === 0}
         >
           결과 보기

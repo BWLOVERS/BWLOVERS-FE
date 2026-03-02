@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ActionButton from '@/common/components/ActionButton';
 import LabeledInput from '@/SignUp/components/LabeledInput';
@@ -13,12 +13,33 @@ import type {
 import { onlyDigits, sliceTo8Digits } from '@/SignUp/utils/inputUtils';
 import { mergeBasicInfoState } from '@/SignUp/utils/routeState';
 import { getBasicInfoValidation } from '@/SignUp/utils/basicInfoValidation';
+import {
+  mapBasicInfoStateToDraft,
+  mapResponseToBasicInfoState
+} from '@/SignUp/utils/pregnancyInfoMapper';
+import { usePregnancyInfoStore } from '@/SignUp/stores/pregnancyInfoStore';
+import SingleBtnModal from '@/common/components/SingleBtnModal';
+import { pregnancyInfoApi } from '@/apis/users/pregnancyInfoApi';
+
+type JobSelectRouteState = SignUpBasicInfoState & {
+  returnTo?: string;
+};
 
 export default function EditBasicInfo() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
 
-  const incomingState = (location.state as SignUpBasicInfoState | null) ?? null;
+  const incomingState = (location.state as JobSelectRouteState | null) ?? null;
+
+  const draftJobName = usePregnancyInfoStore((s) => s.draft.jobName);
+
+  const server = usePregnancyInfoStore((s) => s.server);
+  const fetchPregnancyInfo = usePregnancyInfoStore((s) => s.fetchPregnancyInfo);
+  const setServer = usePregnancyInfoStore((s) => s.setServer);
+
+  const didInitFormRef = useRef(false);
 
   const [birthDate, setBirthDate] = useState('');
   const [job, setJob] = useState('');
@@ -35,34 +56,56 @@ export default function EditBasicInfo() {
 
   const [isSaveClicked, setIsSaveClicked] = useState(false);
 
+  const applyStateToForm = (state: SignUpBasicInfoState) => {
+    if (typeof state.birthDate === 'string') setBirthDate(state.birthDate);
+    if (typeof state.jobName === 'string') setJob(state.jobName);
+    if (typeof state.expectedDate === 'string')
+      setExpectedDate(state.expectedDate);
+    if (typeof state.height === 'string') setHeight(state.height);
+    if (typeof state.weightPre === 'string') setWeightPre(state.weightPre);
+    if (typeof state.weightCurrent === 'string')
+      setWeightCurrent(state.weightCurrent);
+    if (typeof state.gestationalWeek === 'string')
+      setGestationalWeek(state.gestationalWeek);
+
+    if (typeof state.isMultiplePregnancy !== 'undefined')
+      setIsMultiple(state.isMultiplePregnancy ?? null);
+    if (typeof state.miscarriageHistory !== 'undefined')
+      setMiscarriageHistory(state.miscarriageHistory ?? null);
+    if (typeof state.isFirstbirth !== 'undefined')
+      setIsFirstbirth(state.isFirstbirth ?? null);
+
+    if (typeof state.miscarriageCount === 'string')
+      setMiscarriageCount(state.miscarriageCount);
+  };
+
+  // route state가 있으면 우선 반영
   useEffect(() => {
     if (!incomingState) return;
-
-    if (typeof incomingState.birthDate === 'string')
-      setBirthDate(incomingState.birthDate);
-    if (typeof incomingState.jobName === 'string')
-      setJob(incomingState.jobName);
-    if (typeof incomingState.expectedDate === 'string')
-      setExpectedDate(incomingState.expectedDate);
-    if (typeof incomingState.height === 'string')
-      setHeight(incomingState.height);
-    if (typeof incomingState.weightPre === 'string')
-      setWeightPre(incomingState.weightPre);
-    if (typeof incomingState.weightCurrent === 'string')
-      setWeightCurrent(incomingState.weightCurrent);
-    if (typeof incomingState.gestationalWeek === 'string')
-      setGestationalWeek(incomingState.gestationalWeek);
-
-    if (typeof incomingState.isMultiplePregnancy !== 'undefined')
-      setIsMultiple(incomingState.isMultiplePregnancy ?? null);
-    if (typeof incomingState.miscarriageHistory !== 'undefined')
-      setMiscarriageHistory(incomingState.miscarriageHistory ?? null);
-    if (typeof incomingState.isFirstbirth !== 'undefined')
-      setIsFirstbirth(incomingState.isFirstbirth ?? null);
-
-    if (typeof incomingState.miscarriageCount === 'string')
-      setMiscarriageCount(incomingState.miscarriageCount);
+    applyStateToForm(incomingState);
   }, [incomingState]);
+
+  //store를 통해 조회
+  useEffect(() => {
+    fetchPregnancyInfo();
+  }, [fetchPregnancyInfo]);
+
+  // server가 준비되면 폼 초기화
+  useEffect(() => {
+    if (!server) return;
+    if (didInitFormRef.current) return;
+
+    didInitFormRef.current = true;
+
+    const mapped = mapResponseToBasicInfoState(server);
+    applyStateToForm(mapped);
+  }, [server]);
+
+  //JobSelect에서 선택 후 돌아오면 job만 업데이트
+  useEffect(() => {
+    if (!draftJobName) return;
+    setJob(draftJobName);
+  }, [draftJobName]);
 
   const handleDateChange =
     (setter: React.Dispatch<React.SetStateAction<string>>) =>
@@ -119,14 +162,21 @@ export default function EditBasicInfo() {
     });
   };
 
-  const handleSave = () => {
+  //PATCH
+  const handleSave = async () => {
     setIsSaveClicked(true);
     if (hasError) return;
 
-    // ✅ 나중에 PATCH API 연결할 payload
-    console.log('EDIT BASIC INFO SAVE PAYLOAD:', currentFormState);
+    try {
+      const draftForPatch = mapBasicInfoStateToDraft(currentFormState);
+      const updated = await pregnancyInfoApi.patchPregnancyInfo(draftForPatch);
 
-    // 저장 성공 후 토스트/모달 등 처리(추후)
+      setServer(updated);
+
+      setIsModalOpen(true);
+    } catch (e) {
+      if (import.meta.env.DEV) console.log('[PATCH pregnancy-info failed]', e);
+    }
   };
 
   return (
@@ -182,7 +232,7 @@ export default function EditBasicInfo() {
 
           <LabeledInput
             label="출산 예정일"
-            placeholder="출산 예정일 8자리 입력 (ex. 19950101)"
+            placeholder="출산 예정일 8자리 입력 (ex. 20260520)"
             type="tel"
             value={expectedDate}
             onChange={handleDateChange(setExpectedDate)}
@@ -236,6 +286,16 @@ export default function EditBasicInfo() {
           disabled={!isAllRequiredFilled}
         />
       </div>
+
+      <SingleBtnModal
+        open={isModalOpen}
+        title="수정 완료"
+        content="회원 정보가 수정되었습니다."
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={() => {
+          setIsModalOpen(false);
+        }}
+      />
     </>
   );
 }

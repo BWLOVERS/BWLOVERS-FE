@@ -8,7 +8,6 @@ type ValidationArgs = {
   isSecondCategory: boolean;
   noneChecked: boolean;
   selectedDiseases: string[];
-  etcText: string;
   extraByDisease: Record<string, ExtraState>;
 };
 
@@ -32,7 +31,7 @@ export function validateSelectedExtras({
     if (extra.cured === null) return false;
 
     // 1번(=isSecondCategory false)만 날짜 8자리 필수
-    if (!isSecondCategory) return extra.lastDate.length === 8;
+    if (!isSecondCategory) return extra.lastDate.length === 6;
 
     // 2번은 날짜 없음
     return true;
@@ -41,11 +40,10 @@ export function validateSelectedExtras({
 
 // 폼 전체 완료 판정(핑크 테두리 / 완료 버튼 활성화 기준)
 export function computeHealthFormCompleted(args: ValidationArgs) {
-  const { noneChecked, selectedDiseases, etcText } = args;
+  const { noneChecked, selectedDiseases } = args;
 
   if (noneChecked) return true;
-  if (selectedDiseases.length === 0 && etcText.trim().length === 0)
-    return false;
+  if (selectedDiseases.length === 0) return false;
 
   return validateSelectedExtras(args);
 }

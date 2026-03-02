@@ -9,7 +9,7 @@ import JobInput from '../components/JobInput';
 import ToggleInput from '../components/ToggleInput';
 import { onlyDigits, sliceTo8Digits } from '../utils/inputUtils';
 import { getBasicInfoValidationFromDraft } from '../utils/basicInfoValidation';
-import { usePregnancyInfoStore } from '@/stores/pregnancyInfoStore';
+import { usePregnancyInfoStore } from '@/SignUp/stores/pregnancyInfoStore';
 import { pregnancyInfoApi } from '@/apis/users/pregnancyInfoApi';
 
 export default function SignUpBasicInfo() {
