@@ -25,7 +25,7 @@ export default function Home() {
   }, [me, fetchMe]);
 
   const username = me?.username;
-  const profileImageUrl = me?.profileImageUrl ?? null;
+  const profileImage = me?.profileImage ?? null;
 
   return (
     <>
@@ -38,7 +38,7 @@ export default function Home() {
             <br /> {username} 님!
           </div>
           <div className="flex gap-3">
-            <HomeProfileImg imageUrl={profileImageUrl} />
+            <HomeProfileImg imageUrl={profileImage} />
             <button onClick={() => navigate('/profile/edit')}>
               <ForwardIcon className="h-8 w-8 rounded-full hover:bg-gray-20" />
             </button>

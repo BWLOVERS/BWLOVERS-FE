@@ -334,11 +334,11 @@ export const healthStatusApi = {
     return mapHealthStatusResponseToDraft(res);
   },
 
-  // ✅ PUT: draft 보내고, 응답(res)을 draft로 변환해서 바로 돌려줌 (GET 추가 호출 없음)
-  async putHealthStatusDraft(draft: HealthStatusDraft) {
+  // patch: draft 보내고, 응답(res)을 draft로 변환해서 바로 돌려줌 (GET 추가 호출 없음)
+  async patchHealthStatusDraft(draft: HealthStatusDraft) {
     const body = mapDraftToHealthStatusRequest(draft);
 
-    const { data } = await axiosInstance.put<HealthStatusResponse>(
+    const { data } = await axiosInstance.patch<HealthStatusResponse>(
       '/users/me/health-status',
       body
     );

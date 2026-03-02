@@ -69,7 +69,7 @@ export default function EditHealth() {
     if (import.meta.env.DEV) console.log('EDIT HEALTH SAVE PAYLOAD:', payload);
 
     try {
-      await healthStatusApi.putHealthStatusDraft(payload);
+      await healthStatusApi.patchHealthStatusDraft(payload);
       setAll(payload);
 
       setIsModalOpen(true);
