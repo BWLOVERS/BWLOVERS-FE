@@ -1,17 +1,20 @@
 import { useRef } from 'react';
 import DefaultProfile from '@/assets/common/defaultprofile.svg?react';
 import CameraIcon from '@/assets/SignUp/icon_camera.svg?react';
+import TrashIcon from '@/assets/common/icon_trash.svg?react';
 
 type ProfileImgProps = {
   imageUrl?: string | null;
   alt?: string;
   onChange?: (file: File) => void;
+  onDelete?: () => void;
 };
 
 export default function ProfileImg({
   imageUrl,
   alt = '프로필 이미지',
-  onChange
+  onChange,
+  onDelete
 }: ProfileImgProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -27,33 +30,51 @@ export default function ProfileImg({
   };
 
   return (
-    <div className="group relative mb-[2.13rem] h-28 w-28 overflow-hidden rounded-full bg-white">
-      {imageUrl ? (
-        <img src={imageUrl} alt={alt} className="h-full w-full object-cover" />
-      ) : (
-        <div className="flex h-full w-full items-center justify-center">
-          <DefaultProfile className="h-full w-full" />
-        </div>
+    <div className="relative mb-[2.13rem] h-28 w-28 overflow-visible">
+      <div className="group relative h-full w-full overflow-hidden rounded-full bg-white">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={alt}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <DefaultProfile className="h-full w-full" />
+          </div>
+        )}
+
+        {/* hover 오버레이  */}
+        <button
+          type="button"
+          onClick={handleClick}
+          aria-label="프로필 이미지 업로드"
+          className="absolute inset-0 z-10 flex items-center justify-center bg-[rgba(83,83,83,0.40)] opacity-0 backdrop-blur-[1.5px] transition-opacity group-hover:opacity-100"
+        >
+          <CameraIcon className="h-7.5 w-7.5" />
+        </button>
+
+        {/* 실제 파일 input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+      </div>
+
+      {/* 삭제 버튼 */}
+      {imageUrl && (
+        <button
+          type="button"
+          onClick={onDelete}
+          className="absolute top-1 right-0 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-white p-1.25 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] hover:bg-gray-20"
+          aria-label="프로필 이미지 삭제"
+        >
+          <TrashIcon className="h-3.5 w-3.5" />
+        </button>
       )}
-
-      {/* hover 오버레이 */}
-      <button
-        type="button"
-        onClick={handleClick}
-        aria-label="프로필 이미지 업로드"
-        className="absolute inset-0 flex items-center justify-center bg-[rgba(83,83,83,0.40)] opacity-0 backdrop-blur-[1.5px] transition-opacity group-hover:opacity-100"
-      >
-        <CameraIcon className="h-7.5 w-7.5" />
-      </button>
-
-      {/* 실제 파일 input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleFileChange}
-      />
     </div>
   );
 }
