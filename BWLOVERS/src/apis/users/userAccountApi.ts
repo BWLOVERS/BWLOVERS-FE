@@ -4,12 +4,15 @@ export type UserMeResponse = {
   username: string;
   email: string;
   phone: string;
-  profileImageUrl: string | null;
+  profileImage: string | null;
 };
 
-export type UpdateMeRequest = {
+export type UpdateNameRequest = {
   username: string;
-  profileImageUrl: string | null;
+};
+
+export type UpdateNameResponse = {
+  username: string;
 };
 
 export const userAccountApi = {
@@ -18,11 +21,24 @@ export const userAccountApi = {
     return data;
   },
 
-  updateMe: async (body: UpdateMeRequest) => {
-    const { data } = await axiosInstance.patch<UserMeResponse>(
-      '/users/me',
+  updateName: async (body: UpdateNameRequest) => {
+    const { data } = await axiosInstance.patch<UpdateNameResponse>(
+      '/users/me/username',
       body
     );
     return data;
+  },
+
+  updateProfileImage: async (file: File) => {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    await axiosInstance.patch('/users/me/profile-image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
+
+  deleteProfileImage: async () => {
+    await axiosInstance.delete('/users/me/profile-image');
   }
 };
