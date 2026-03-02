@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 type InsuranceCardProps = {
   showForwardIcon?: boolean;
   onClick?: () => void;
-
+  insuranceId?: number;
   productName?: string;
   insuranceCompany?: string;
   isLongTerm?: boolean;
@@ -59,6 +59,7 @@ function ChevronDown({ className = '' }: { className?: string }) {
 export default function InsuranceCard({
   showForwardIcon = true,
   onClick,
+  insuranceId,
   productName,
   insuranceCompany,
   isLongTerm,
@@ -238,7 +239,11 @@ export default function InsuranceCard({
               <span className="text-body-bold-md">선택 특약</span>
               {!hideDetailButton && (
                 <button
-                  onClick={() => navigate('/myinsurance/detail')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!insuranceId) return;
+                    navigate(`/myinsurance/detail/${insuranceId}`);
+                  }}
                   className="rounded-full bg-gray-10 px-2 text-gray-60"
                 >
                   자세히 &gt;

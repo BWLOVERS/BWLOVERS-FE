@@ -19,6 +19,8 @@ import ExplainResult from './Insurance/pages/ExplainResult';
 import ExplainLoading from './Insurance/pages/ExplainLoading';
 import CoverageResult from './Insurance/pages/CoverageResult';
 import CoverageUpload from './Insurance/pages/CoverageUpload';
+import RecommendLoading from './Insurance/pages/RecommendLoading';
+import CoverageLoading from './Insurance/pages/CoverageLoading';
 const router = createBrowserRouter([
   {
     element: <MainLayout />,
@@ -38,7 +40,10 @@ const router = createBrowserRouter([
         path: '/myinsurance/select',
         element: <MyInsuranceList mode="select" />
       },
-      { path: '/myinsurance/detail', element: <MyInsuranceDetail /> },
+      {
+        path: '/myinsurance/detail/:insuranceId',
+        element: <MyInsuranceDetail />
+      },
       { path: '/profile/edit', element: <EditProfile /> },
       { path: '/insurance', element: <InsuranceMain /> },
       { path: '/insurance/recommend/result', element: <RecommendResult /> },
@@ -46,7 +51,9 @@ const router = createBrowserRouter([
         path: '/insurance/recommend/result/detail',
         element: <RecommendResultDetail />
       },
+      { path: '/insurance/recommend/loading', element: <RecommendLoading /> },
       { path: '/insurance/coverage', element: <CoverageUpload /> },
+      { path: '/insurance/coverage/loading', element: <CoverageLoading /> },
       { path: '/insurance/coverage/result', element: <CoverageResult /> },
       { path: '/insurance/explain/upload', element: <ExplainUpload /> },
       { path: '/insurance/explain/result', element: <ExplainResult /> },
