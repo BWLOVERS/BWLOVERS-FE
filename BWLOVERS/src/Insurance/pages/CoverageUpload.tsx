@@ -15,7 +15,6 @@ export default function CoverageUpload() {
   const [isSelectedCardOpen, setIsSelectedCardOpen] = useState(false);
   const isSituationValid = situation.trim().length > 0;
   const canSubmit = Boolean(selectedInsurance) && isSituationValid;
-  const allContracts = selectedInsurance?.specialContractNames ?? [];
 
   //시뮬레이션에서만 사용할 특약 선택을 위한 것
   const [simSelectedContracts, setSimSelectedContracts] = useState<string[]>(
@@ -49,12 +48,6 @@ export default function CoverageUpload() {
     [selectedInsurance]
   );
 
-  const toggleContract = (name: string) => {
-    setSimSelectedContracts((prev) =>
-      prev.includes(name) ? prev.filter((x) => x !== name) : [...prev, name]
-    );
-  };
-
   const handleSubmit = () => {
     if (!selectedInsurance) return;
 
@@ -62,7 +55,7 @@ export default function CoverageUpload() {
       insuranceId: selectedInsurance.insuranceId,
       // 원본 보험 정보는 그대로
       productName: selectedInsurance.productName,
-      // ✅ 시뮬레이션 특약만 별도로
+      // 시뮬레이션 특약만 별도로
       selectedContractNames: simSelectedContracts,
       situation
     };
