@@ -1,53 +1,66 @@
 import Header from '@/common/components/Header';
-import { useMemo, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import InsuranceCard from '@/Insurance/components/InsuranceCard';
 import { useCoverageStore } from '../stores/coverageStore';
 import DoubleBtnModal from '@/common/components/DoubleBtnModal';
 import SingleBtnModal from '@/common/components/SingleBtnModal';
+import { coverageApi } from '@/apis/insurance/coverageApi';
+import type { CoverageSimulateResultResponse } from '@/apis/insurance/coverageApi';
 
-type CoverageResultState = {
-  insuranceId: number;
-  productName: string;
-  selectedContractNames: string[];
-  situation: string;
-};
-
-type DummyAiResponse = {
-  resultId: string;
-  question: string;
-  result: string;
+type CoverageResultLocationState = {
+  selectedContractNames?: string[];
+  situation?: string;
 };
 
 export default function CoverageResult() {
   const navigate = useNavigate();
   const location = useLocation();
+  const params = useParams<{ resultId: string }>();
 
   const { selectedInsurance } = useCoverageStore();
   const [isCardOpen, setIsCardOpen] = useState(false);
+
+  const [ai, setAi] = useState<CoverageSimulateResultResponse | null>(null);
+  const [isFetching, setIsFetching] = useState(true);
 
   const [isSaveConfirmOpen, setIsSaveConfirmOpen] = useState(false);
   const [isSaveDoneOpen, setIsSaveDoneOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const state = location.state as CoverageResultState | null;
+  const navState = location.state as CoverageResultLocationState | null;
 
-  if (!state || !selectedInsurance) {
-    navigate('/insurance/coverage', { replace: true });
-    return null;
-  }
+  const selectedContractNames = navState?.selectedContractNames ?? [];
+  const situation = navState?.situation ?? '';
 
-  const { selectedContractNames, situation } = state;
+  useEffect(() => {
+    const resultId = params.resultId;
 
-  const ai: DummyAiResponse = useMemo(
-    () => ({
-      resultId: '1f5a2d8ecc1549e28f9fafe81389cd8d',
-      question: situation,
-      result:
-        '임신 20주에 임신중독증이 발생한 경우, 귀하의 보험 상품에서 제공하는 보장 내용을 다음과 같이 분석할 수 있습니다...\n\n(여기에 백엔드 result 문자열 그대로 렌더링)'
-    }),
-    [situation]
-  );
+    if (!resultId) {
+      navigate('/insurance/coverage', { replace: true });
+      return;
+    }
+
+    const run = async () => {
+      setIsFetching(true);
+      try {
+        const data = await coverageApi.getSimulationResult(resultId);
+        setAi(data);
+      } catch (e) {
+        console.error(e);
+        window.alert('결과를 불러오지 못했습니다.');
+        navigate('/insurance/coverage', { replace: true });
+      } finally {
+        setIsFetching(false);
+      }
+    };
+
+    run();
+  }, [params.resultId, navigate]);
+
+  // ✅ 보험 카드 표시를 위해 selectedInsurance가 필요하다면 기존대로 유지
+  //    (새로고침 시 store가 비어있을 수 있음 → 이 경우 카드 영역만 숨기거나, 보험 재선택 유도)
+  const canShowInsuranceCard = Boolean(selectedInsurance);
 
   const handleClickSave = () => {
     setIsSaveConfirmOpen(true);
@@ -75,6 +88,22 @@ export default function CoverageResult() {
     navigate('/home', { replace: true });
   };
 
+  if (isFetching) {
+    // 원하면 Loading 컴포넌트 재사용 가능
+    return (
+      <div className="flex min-h-screen flex-col bg-white">
+        <div className="sticky top-0 z-50 bg-white">
+          <Header title="보장 분석" onBack={() => navigate('/insurance')} />
+        </div>
+        <div className="flex flex-1 items-center justify-center px-9 py-8">
+          <div className="text-body-md text-gray-80">결과 불러오는 중...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!ai) return null;
+
   return (
     <div className="flex min-h-screen flex-col bg-white">
       <div className="sticky top-0 z-50 bg-white">
@@ -82,41 +111,45 @@ export default function CoverageResult() {
       </div>
 
       <div className="flex flex-1 flex-col gap-10 px-9 py-8">
-        {/* 보험 카드 */}
-        <div className="flex flex-col gap-3">
-          <div className="flex text-body-lg text-black">보험 정보</div>
+        {/* 보험 카드 (store 없으면 숨김) */}
+        {canShowInsuranceCard && (
+          <div className="flex flex-col gap-3">
+            <div className="flex text-body-lg text-black">보험 정보</div>
 
-          <InsuranceCard
-            showForwardIcon={false}
-            showMoreIcon={false}
-            onClick={() => setIsCardOpen((prev) => !prev)}
-            productName={selectedInsurance.productName}
-            insuranceCompany={selectedInsurance.insuranceCompany}
-            isLongTerm={selectedInsurance.longTerm}
-            sumInsured={selectedInsurance.sumInsured}
-            monthlyCost={selectedInsurance.monthlyCost}
-            memo={selectedInsurance.memo}
-            createdAt={selectedInsurance.createdAt}
-            expandable
-            specialContractNames={selectedContractNames}
-            isOpen={isCardOpen}
-            onToggle={() => setIsCardOpen((prev) => !prev)}
-            hideDetailButton
-          />
-        </div>
-
-        {/* 사용자 입력 상황 그대로 표시 */}
-        <div className="flex flex-col gap-3">
-          <div className="flex text-body-lg text-black">시뮬레이션 상황</div>
-          <div className="rounded-20 bg-gray-10 p-4 text-body-md whitespace-pre-wrap text-black">
-            {situation}
+            <InsuranceCard
+              showForwardIcon={false}
+              showMoreIcon={false}
+              onClick={() => setIsCardOpen((prev) => !prev)}
+              productName={selectedInsurance!.productName}
+              insuranceCompany={selectedInsurance!.insuranceCompany}
+              isLongTerm={selectedInsurance!.longTerm}
+              sumInsured={selectedInsurance!.sumInsured}
+              monthlyCost={selectedInsurance!.monthlyCost}
+              memo={selectedInsurance!.memo}
+              createdAt={selectedInsurance!.createdAt}
+              expandable
+              specialContractNames={selectedContractNames}
+              isOpen={isCardOpen}
+              onToggle={() => setIsCardOpen((prev) => !prev)}
+              hideDetailButton
+            />
           </div>
-        </div>
+        )}
 
-        {/*  AI 답변 */}
+        {/* 사용자 입력 상황 (새로고침이면 비어있을 수 있음) */}
+        {situation && (
+          <div className="flex flex-col gap-3">
+            <div className="flex text-body-lg text-black">시뮬레이션 상황</div>
+            <div className="rounded-20 bg-gray-10 p-4 text-body-md whitespace-pre-wrap text-black">
+              {situation}
+            </div>
+          </div>
+        )}
+
+        {/* AI 답변 */}
         <div className="flex flex-col gap-3">
           <div className="flex text-body-lg text-black">
-            위 보험과 상황의 경우..
+            위 보험과 상황의 경우
           </div>
 
           <div className="rounded-20 bg-white p-4 text-body-md whitespace-pre-wrap text-black shadow-[0_0_4px_0_rgba(0,0,0,0.10)]">

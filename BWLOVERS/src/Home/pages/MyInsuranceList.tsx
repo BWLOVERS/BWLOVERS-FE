@@ -16,6 +16,7 @@ type SavedInsuranceItem = {
   monthlyCost?: string;
   memo?: string;
   createdAt: string;
+  specialContracts: { contractId: number; contractName: string }[];
   specialContractNames: string[];
   longTerm: boolean;
 };
@@ -55,6 +56,7 @@ export default function MyInsuranceList({
           monthlyCost: it.monthlyCost,
           memo: it.memo,
           createdAt: it.createdAt,
+          specialContracts: it.specialContracts ?? [],
           specialContractNames: (it.specialContracts ?? []).map(
             (c) => c.contractName
           ),
@@ -134,7 +136,6 @@ export default function MyInsuranceList({
         <Header title={isSelectMode ? '보험 선택' : '내가 저장한 보험'} />
       </div>
 
-      {/* ✅ 선택 모드면 하단 버튼 때문에 padding-bottom 확보 */}
       <div
         className={`flex flex-col gap-3 px-[1.8rem] py-4 ${
           isSelectMode ? 'pb-28' : ''

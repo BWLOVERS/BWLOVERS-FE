@@ -54,7 +54,10 @@ const router = createBrowserRouter([
       { path: '/insurance/recommend/loading', element: <RecommendLoading /> },
       { path: '/insurance/coverage', element: <CoverageUpload /> },
       { path: '/insurance/coverage/loading', element: <CoverageLoading /> },
-      { path: '/insurance/coverage/result', element: <CoverageResult /> },
+      {
+        path: '/insurance/coverage/result/:resultId',
+        element: <CoverageResult />
+      },
       { path: '/insurance/explain/upload', element: <ExplainUpload /> },
       { path: '/insurance/explain/result', element: <ExplainResult /> },
       { path: '/insurance/explain/loading', element: <ExplainLoading /> },
