@@ -5,11 +5,33 @@ import FilterModal, {
   type FilterValue
 } from '@/Insurance/components/FilterModal';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { recommendListDummy } from '../mocks/recommendListDummy';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+type RecommendItem = {
+  itemId: string;
+  insurance_company: string;
+  product_name: string;
+  is_long_term: boolean;
+  sum_insured: number;
+  monthly_cost?: string;
+  special_contract_count: number;
+};
+
+type RecommendListResponse = {
+  resultId: string;
+  expiresInSec: number;
+  items: RecommendItem[];
+};
+
+type LocationState = {
+  result?: RecommendListResponse;
+};
 
 export default function RecommendResult() {
   const navigate = useNavigate();
+  const { state } = useLocation() as { state: LocationState | null };
+
+  const result = state?.result;
 
   const buttonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -21,6 +43,12 @@ export default function RecommendResult() {
     periods: [],
     maxMonthlyFee: 'all'
   });
+
+  useEffect(() => {
+    if (result) return;
+    window.alert('추천 결과를 다시 생성해 주세요.');
+    navigate('/insurance', { replace: true });
+  }, [result, navigate]);
 
   const chips = useMemo(() => {
     const items: string[] = [];
@@ -72,8 +100,13 @@ export default function RecommendResult() {
     };
   }, [isFilterOpen]);
 
-  const handleGoDetail = (itemId: string) =>
-    navigate(`/insurance/recommend/result/detail?itemId=${itemId}`);
+  const handleGoDetail = (itemId: string) => {
+    if (!result) return null;
+    navigate(
+      `/insurance/recommend/result/detail?resultId=${result.resultId}&itemId=${itemId}`
+    );
+  };
+  if (!result) return null;
 
   return (
     <>
@@ -114,7 +147,7 @@ export default function RecommendResult() {
 
       <div className="px-[1.7rem] py-3">
         <div className="mb-8 flex flex-col gap-4">
-          {recommendListDummy.items.map((item) => (
+          {result.items.map((item) => (
             <InsuranceCard
               key={item.itemId}
               showForwardIcon
