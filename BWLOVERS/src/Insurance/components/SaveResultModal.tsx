@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import ActionButtonMini from '@/common/components/ActionButtonMini';
 import CheckBoxIconBlank from '@/assets/common/icon_checkbox_blank.svg?react';
 import CheckBoxIconFilled from '@/assets/common/icon_checkbox_check.svg?react';
@@ -24,6 +24,13 @@ export default function SaveResultModal({
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [memo, setMemo] = useState('');
 
+  useEffect(() => {
+    if (open) {
+      setSelected(new Set());
+      setMemo('');
+    }
+  }, [open]);
+
   const selectedContracts = useMemo(
     () => contracts.filter((c) => selected.has(c.contract_name)),
     [contracts, selected]
@@ -42,7 +49,6 @@ export default function SaveResultModal({
 
   const handleSave = () => {
     onSave?.({ selectedContracts, memo });
-    onClose();
   };
 
   return (
