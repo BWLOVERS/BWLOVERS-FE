@@ -11,8 +11,6 @@ export default function RecommendLoading() {
     if (didRunRef.current) return;
     didRunRef.current = true;
 
-    let cancelled = false;
-
     const sleep = (ms: number) =>
       new Promise((resolve) => setTimeout(resolve, ms));
 
