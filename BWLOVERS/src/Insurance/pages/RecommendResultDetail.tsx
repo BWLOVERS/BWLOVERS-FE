@@ -1,17 +1,49 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Header from '@/common/components/Header';
 import InsuranceCard from '../components/InsuranceCard';
 import SpecialContractsSection from '../components/SpecialContractsSection';
-//import { useSearchParams } from 'react-router-dom';
-import { recommendDetailDummy } from '@/Insurance/mocks/recommendDetailDummy';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import SaveResultModal from '../components/SaveResultModal';
+import {
+  recommendApi,
+  type RecommendDetailResponse
+} from '@/apis/insurance/recommendApi';
+import SingleBtnModal from '@/common/components/SingleBtnModal';
 
 export default function RecommendResultDetail() {
-  //const [searchParams] = useSearchParams();
-  //const itemId = searchParams.get('itemId'); // api 연결 시 사용
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const data = recommendDetailDummy;
-  const [open, setOpen] = useState(false);
+  const resultId = searchParams.get('resultId');
+  const itemId = searchParams.get('itemId');
+
+  const [data, setData] = useState<RecommendDetailResponse | null>(null);
+  const [saveModalOpen, setSaveModalOpen] = useState(false);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [errorModalOpen, setErrorModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (!resultId || !itemId) {
+      window.alert('잘못된 접근입니다.');
+      navigate('/insurance', { replace: true });
+      return;
+    }
+
+    const run = async () => {
+      try {
+        const res = await recommendApi.getRecommendDetail(resultId, itemId);
+        setData(res);
+      } catch (e) {
+        console.error(e);
+        window.alert(
+          '상세 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.'
+        );
+        navigate('/insurance', { replace: true });
+      }
+    };
+
+    run();
+  }, [resultId, itemId, navigate]);
 
   if (!data) return null;
 
@@ -20,7 +52,6 @@ export default function RecommendResultDetail() {
       <div className="sticky top-0 z-50 bg-white">
         <Header title="결과 상세" />
       </div>
-
       <div className="flex flex-col gap-10 px-[1.7rem] pt-3 pb-10">
         <InsuranceCard
           showForwardIcon={false}
@@ -33,7 +64,6 @@ export default function RecommendResultDetail() {
         />
 
         <div className="flex flex-col gap-10">
-          {/* AI 추천 이유 */}
           <section className="flex flex-col gap-2">
             <div className="text-body-bold-md text-black">
               AI의 보험 추천 이유
@@ -43,22 +73,59 @@ export default function RecommendResultDetail() {
             </div>
           </section>
 
-          {/* 고려 특약 */}
           <SpecialContractsSection
             contracts={data.special_contracts}
-            onSave={() => setOpen(true)} // ✅ 여기서 모달 열기
+            onSave={() => setSaveModalOpen(true)}
           />
         </div>
       </div>
 
       <SaveResultModal
-        open={open}
+        open={saveModalOpen}
         contracts={data.special_contracts.map((c) => ({
           contract_name: c.contract_name
         }))}
-        onClose={() => setOpen(false)}
-        onSave={({ selectedContracts, memo }) => {
-          console.log(selectedContracts, memo);
+        onClose={() => setSaveModalOpen(false)}
+        onSave={async ({ selectedContracts, memo }) => {
+          const resolvedItemId = itemId ?? data.itemId;
+
+          const selectedContractNames = selectedContracts.map(
+            (c) => c.contract_name
+          );
+
+          try {
+            await recommendApi.saveSelectedInsurance({
+              resultId: resultId!,
+              itemId: resolvedItemId!,
+              selectedContractNames,
+              memo
+            });
+
+            //저장 성공
+            setSaveModalOpen(false);
+            setConfirmModalOpen(true);
+          } catch (e) {
+            setErrorModalOpen(true);
+          }
+        }}
+      />
+
+      <SingleBtnModal
+        open={confirmModalOpen}
+        title="결과 저장 완료"
+        content="저장된 보험은 홈 또는 내가 저장한 보험에서 확인할 수 있습니다."
+        onClose={() => setConfirmModalOpen(false)}
+        onConfirm={() => {
+          setConfirmModalOpen(false);
+        }}
+      />
+      <SingleBtnModal
+        open={errorModalOpen}
+        title="저장 실패"
+        content="저장에 실패하였습니다. 잠시 후 다시 시도해주세요."
+        onClose={() => setErrorModalOpen(false)}
+        onConfirm={() => {
+          setErrorModalOpen(false);
         }}
       />
     </>

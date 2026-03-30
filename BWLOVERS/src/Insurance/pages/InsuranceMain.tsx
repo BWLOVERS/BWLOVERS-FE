@@ -6,6 +6,7 @@ import TabSelector from '../components/TabSelector';
 import RecommendationTab from '../components/Tabs/RecommendationTab';
 import CoverageTab from '../components/Tabs/CoverageTab';
 import ExplainTab from '../components/Tabs/ExplainTab';
+import { useNavigate } from 'react-router-dom';
 
 type InsuranceTabKey = 'recommendation' | 'coverage' | 'explain';
 
@@ -20,12 +21,12 @@ const INSURANCE_TABS: readonly {
 
 export default function InsuranceMain() {
   const [activeTab, setActiveTab] = useState<InsuranceTabKey>('recommendation');
-
+  const navigate = useNavigate();
   return (
     <>
       <div className="flex min-h-screen flex-col bg-white">
         <div className="sticky top-0 z-50 bg-white">
-          <Header title="보험 분석" />
+          <Header title="보험 분석" onBack={() => navigate('/home')} />
           <TabSelector
             activeTab={activeTab}
             tabs={INSURANCE_TABS}

@@ -19,6 +19,10 @@ import ExplainResult from './Insurance/pages/ExplainResult';
 import ExplainLoading from './Insurance/pages/ExplainLoading';
 import CoverageResult from './Insurance/pages/CoverageResult';
 import CoverageUpload from './Insurance/pages/CoverageUpload';
+import RecommendLoading from './Insurance/pages/RecommendLoading';
+import CoverageLoading from './Insurance/pages/CoverageLoading';
+import MyReportList from './Home/pages/MyReportList';
+import MyReportDetail from './Home/pages/MyReportDetail';
 const router = createBrowserRouter([
   {
     element: <MainLayout />,
@@ -33,12 +37,17 @@ const router = createBrowserRouter([
       { path: '/jobs', element: <JobSelect /> },
       { path: '/signup/health', element: <SignUpHealth /> },
       { path: '/home', element: <Home /> },
+      { path: '/myreport', element: <MyReportList /> },
+      { path: '/myreport/:simulationId', element: <MyReportDetail /> },
       { path: '/myinsurance', element: <MyInsuranceList /> },
       {
         path: '/myinsurance/select',
         element: <MyInsuranceList mode="select" />
       },
-      { path: '/myinsurance/detail', element: <MyInsuranceDetail /> },
+      {
+        path: '/myinsurance/detail/:insuranceId',
+        element: <MyInsuranceDetail />
+      },
       { path: '/profile/edit', element: <EditProfile /> },
       { path: '/insurance', element: <InsuranceMain /> },
       { path: '/insurance/recommend/result', element: <RecommendResult /> },
@@ -46,8 +55,13 @@ const router = createBrowserRouter([
         path: '/insurance/recommend/result/detail',
         element: <RecommendResultDetail />
       },
+      { path: '/insurance/recommend/loading', element: <RecommendLoading /> },
       { path: '/insurance/coverage', element: <CoverageUpload /> },
-      { path: '/insurance/coverage/result', element: <CoverageResult /> },
+      { path: '/insurance/coverage/loading', element: <CoverageLoading /> },
+      {
+        path: '/insurance/coverage/result/:resultId',
+        element: <CoverageResult />
+      },
       { path: '/insurance/explain/upload', element: <ExplainUpload /> },
       { path: '/insurance/explain/result', element: <ExplainResult /> },
       { path: '/insurance/explain/loading', element: <ExplainLoading /> },
