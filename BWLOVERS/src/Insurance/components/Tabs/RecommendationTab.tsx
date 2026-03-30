@@ -20,7 +20,7 @@ export default function RecommendationTab() {
 
         <button
           type="button"
-          onClick={() => navigate('/insurance/recommend/result')}
+          onClick={() => navigate('/insurance/recommend/loading')}
           className="rounded-2xl bg-pink-40 px-10 py-5 text-display-sm text-black shadow-[2px_3px_4px_0_rgba(0,0,0,0.25)] hover:bg-pink-60"
         >
           <div className="flex flex-row items-center justify-center gap-6">

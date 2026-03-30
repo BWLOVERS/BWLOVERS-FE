@@ -1,5 +1,10 @@
 import { create } from 'zustand';
 
+export type SpecialContract = {
+  contractId: number;
+  contractName: string;
+};
+
 type SelectedInsurance = {
   insuranceId: number;
   insuranceCompany: string;
@@ -8,8 +13,9 @@ type SelectedInsurance = {
   monthlyCost?: string;
   memo?: string;
   createdAt: string;
-  specialContractNames: string[];
   longTerm: boolean;
+  specialContracts: SpecialContract[];
+  specialContractNames?: string[];
 };
 
 type CoverageStore = {
@@ -20,6 +26,16 @@ type CoverageStore = {
 
 export const useCoverageStore = create<CoverageStore>((set) => ({
   selectedInsurance: null,
-  setSelectedInsurance: (item) => set({ selectedInsurance: item }),
+
+  setSelectedInsurance: (item) =>
+    set({
+      selectedInsurance: {
+        ...item,
+        specialContractNames: item.specialContractNames?.length
+          ? item.specialContractNames
+          : item.specialContracts.map((c) => c.contractName)
+      }
+    }),
+
   clearSelectedInsurance: () => set({ selectedInsurance: null })
 }));

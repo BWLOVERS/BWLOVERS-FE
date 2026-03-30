@@ -16,7 +16,6 @@ export default function CoverageUpload() {
   const isSituationValid = situation.trim().length > 0;
   const canSubmit = Boolean(selectedInsurance) && isSituationValid;
 
-  //시뮬레이션에서만 사용할 특약 선택을 위한 것
   const [simSelectedContracts, setSimSelectedContracts] = useState<string[]>(
     []
   );
@@ -27,8 +26,10 @@ export default function CoverageUpload() {
       setSimSelectedContracts([]);
       return;
     }
-    //기본은 원본 특약 그대로임
-    setSimSelectedContracts(selectedInsurance.specialContractNames ?? []);
+
+    const defaultNames =
+      selectedInsurance.specialContracts?.map((c) => c.contractName) ?? [];
+    setSimSelectedContracts(defaultNames);
   }, [selectedInsurance]);
 
   useEffect(() => {
@@ -42,8 +43,8 @@ export default function CoverageUpload() {
 
   const contractObjects = useMemo(
     () =>
-      (selectedInsurance?.specialContractNames ?? []).map((name) => ({
-        contract_name: name
+      (selectedInsurance?.specialContracts ?? []).map((c) => ({
+        contract_name: c.contractName
       })),
     [selectedInsurance]
   );
@@ -51,20 +52,20 @@ export default function CoverageUpload() {
   const handleSubmit = () => {
     if (!selectedInsurance) return;
 
+    // ✅ 이름 -> id 변환 (API에 보낼 건 id)
+    const selectedContractIds = (selectedInsurance.specialContracts ?? [])
+      .filter((c) => simSelectedContracts.includes(c.contractName))
+      .map((c) => c.contractId);
+
     const payload = {
       insuranceId: selectedInsurance.insuranceId,
-      // 원본 보험 정보는 그대로
-      productName: selectedInsurance.productName,
-      // 시뮬레이션 특약만 별도로
-      selectedContractNames: simSelectedContracts,
-      situation
+      selectedContractIds, // ✅ number[]
+      selectedContractNames: simSelectedContracts, // (Result 카드 표시용으로만)
+      question: situation // ✅ API 필드명 question
     };
 
-    // 1) API 호출하거나
-    // await coverageApi.simulate(payload);
-
-    // 2) 결과 페이지로 넘기거나(react-router state)
-    navigate('/insurance/coverage/result', { state: payload });
+    // ✅ Loading으로 이동 (Loading에서 POST→GET 후 Result 이동)
+    navigate('/insurance/coverage/loading', { state: payload });
   };
 
   return (

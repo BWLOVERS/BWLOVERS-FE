@@ -3,7 +3,12 @@ import InsuranceCard from '@/Insurance/components/InsuranceCard';
 import SpecialContractAccordion from '@/Insurance/components/SpecialContractAccordion';
 import ActionButton from '@/common/components/ActionButton';
 import EditIcon from '@/assets/common/icon_edit.svg?react';
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import {
+  insurancesApi,
+  type InsuranceDetailResponse
+} from '@/apis/insurance/insurancesApi';
 
 type SpecialContract = {
   contract_name: string;
@@ -19,53 +24,18 @@ type SavedInsuranceDetail = {
   is_long_term: boolean;
   sum_insured: number;
   monthly_cost?: string;
-
   special_contracts: SpecialContract[];
-
   insurance_recommendation_reason: string;
-
   memo?: string;
-  createdAt: string;
+  createdAt?: string;
 };
 
 export default function MyInsuranceDetail() {
-  // ✅ 실제론 API에서 받아온 단건 데이터로 바꾸면 됨
-  const data: SavedInsuranceDetail = useMemo(
-    () => ({
-      insurance_company: '삼성화재',
-      product_name:
-        '무배당 삼성화재 다이렉트 임산부ㆍ아기보험(해약환급금 미지급형Ⅱ)',
-      is_long_term: true,
-      sum_insured: 15000,
-      monthly_cost: '40,056원',
+  const { insuranceId } = useParams<{ insuranceId: string }>();
 
-      insurance_recommendation_reason:
-        '임신 23주차로 조산 위험이 있는 상황에서, 임신중독증 진단비와 유산 위로금 특별약관을 통해 추가적인 보장을 받을 수 있습니다.',
+  const [data, setData] = useState<SavedInsuranceDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-      special_contracts: [
-        {
-          contract_name: '임신중독증 진단비 특별약관',
-          contract_description: '약관 기반 맞춤 보장',
-          contract_recommendation_reason: '23주차 맞춤 특약',
-          key_features: ['보장 범위 확인 완료'],
-          page_number: 357
-        },
-        {
-          contract_name: '유산 위로금 특별약관',
-          contract_description: '약관 기반 맞춤 보장',
-          contract_recommendation_reason: '23주차 맞춤 특약',
-          key_features: ['보장 범위 확인 완료'],
-          page_number: 412
-        }
-      ],
-
-      memo: 'ver1.치아특약포함',
-      createdAt: '2026-02-11T19:54:25.274782'
-    }),
-    []
-  );
-
-  // 여러 개 열기: 열린 index들을 Set으로 관리
   const [openIndexes, setOpenIndexes] = useState<Set<number>>(() => new Set());
 
   const handleToggle = (idx: number) => {
@@ -77,10 +47,61 @@ export default function MyInsuranceDetail() {
     });
   };
 
-  // ✅ 메모 편집 상태
-  const [memo, setMemo] = useState<string>(data.memo ?? '');
+  //  메모 편집 상태 (data 로드 후 세팅)
+  const [memo, setMemo] = useState<string>('');
   const [isEditingMemo, setIsEditingMemo] = useState(false);
-  const [memoDraft, setMemoDraft] = useState<string>(data.memo ?? '');
+  const [memoDraft, setMemoDraft] = useState<string>('');
+
+  //단건 상세 조회
+  useEffect(() => {
+    const id = Number(insuranceId);
+    if (!insuranceId || Number.isNaN(id)) {
+      window.alert('잘못된 접근입니다.');
+      return;
+    }
+
+    const fetchDetail = async () => {
+      try {
+        setIsLoading(true);
+
+        const res: InsuranceDetailResponse =
+          await insurancesApi.getMyInsuranceDetail(id);
+
+        const mapped: SavedInsuranceDetail = {
+          insurance_company: res.insuranceCompany,
+          product_name: res.productName,
+          is_long_term: res.longTerm,
+          sum_insured: res.sumInsured,
+          monthly_cost: res.monthlyCost,
+          insurance_recommendation_reason: res.insuranceRecommendationReason,
+          memo: res.memo ?? '',
+          special_contracts: (res.specialContracts ?? []).map((c) => ({
+            contract_name: c.contractName,
+            contract_description: c.contractDescription,
+            contract_recommendation_reason: c.contractRecommendationReason,
+            key_features: c.keyFeatures ?? [],
+            page_number: c.pageNumber
+          })),
+          createdAt: res.createdAt
+        };
+
+        setData(mapped);
+
+        // 메모 상태 초기화(로드 후)
+        setMemo(mapped.memo ?? '');
+        setMemoDraft(mapped.memo ?? '');
+      } catch (e) {
+        console.error('getMyInsuranceDetail failed:', e);
+        window.alert(
+          '보험 상세 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.'
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDetail();
+  }, [insuranceId]);
 
   const handleStartEditMemo = () => {
     setIsEditingMemo(true);
@@ -89,20 +110,47 @@ export default function MyInsuranceDetail() {
 
   const handleCancelEditMemo = () => {
     setIsEditingMemo(false);
-    setMemoDraft(memo); // draft 롤백
+    setMemoDraft(memo);
   };
 
   const handleSaveMemo = async () => {
+    const id = Number(insuranceId);
+    if (Number.isNaN(id)) return;
+
     const nextMemo = memoDraft;
 
-    // ✅ TODO: API 연결 시 여기서 PATCH/PUT 호출
-    // await myInsuranceApi.updateMemo({ ..., memo: nextMemo })
+    try {
+      const { memo: savedMemo } = await insurancesApi.updateInsuranceMemo(
+        id,
+        nextMemo
+      );
 
-    setMemo(nextMemo);
-    setIsEditingMemo(false);
+      setMemo(savedMemo);
+      setMemoDraft(savedMemo);
+      setIsEditingMemo(false);
+
+      setData((prev) => (prev ? { ...prev, memo: savedMemo } : prev));
+    } catch (e) {
+      console.error('updateInsuranceMemo failed:', e);
+      window.alert('메모 저장에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    }
   };
 
-  const isSaveDisabled = memoDraft.trim().length === 0;
+  const isSaveDisabled = memoDraft === memo;
+
+  //  로딩/빈 데이터 처리
+  if (isLoading || !data) {
+    return (
+      <>
+        <div className="sticky top-0 z-50 bg-white">
+          <Header title="내가 저장한 보험" />
+        </div>
+        <div className="px-[1.7rem] pt-6 text-body-sm text-gray-60">
+          불러오는 중...
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -111,7 +159,7 @@ export default function MyInsuranceDetail() {
       </div>
 
       <div className="flex flex-col gap-10 px-[1.7rem] pt-3 pb-10">
-        {/* ✅ 저장 상세에서도 카드 클릭 불가 */}
+        {/*  저장 상세에서도 카드 클릭 불가 */}
         <InsuranceCard
           showForwardIcon={false}
           productName={data.product_name}
@@ -152,7 +200,7 @@ export default function MyInsuranceDetail() {
             </div>
           </section>
 
-          {/* ✅ 메모 + 편집 */}
+          {/*  메모 + 편집 */}
           <section className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <div className="text-body-bold-md text-black">메모</div>
@@ -171,8 +219,10 @@ export default function MyInsuranceDetail() {
 
             {/* 보기 모드 */}
             {!isEditingMemo && (
-              <div className="rounded-2xl bg-[#f7f7f7] p-5 text-body-sm whitespace-pre-line text-black">
-                {memo.trim() ? memo : '-'}
+              <div
+                className={`rounded-2xl bg-[#f7f7f7] p-5 text-body-sm whitespace-pre-line ${memo.trim() ? 'text-black' : 'text-gray-40'}`}
+              >
+                {memo.trim() ? memo : '저장한 메모가 없습니다'}
               </div>
             )}
 

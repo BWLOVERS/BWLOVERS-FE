@@ -5,11 +5,33 @@ import FilterModal, {
   type FilterValue
 } from '@/Insurance/components/FilterModal';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { recommendListDummy } from '../mocks/recommendListDummy';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+type RecommendItem = {
+  itemId: string;
+  insurance_company: string;
+  product_name: string;
+  is_long_term: boolean;
+  sum_insured: number;
+  monthly_cost?: string;
+  special_contract_count: number;
+};
+
+type RecommendListResponse = {
+  resultId: string;
+  expiresInSec: number;
+  items: RecommendItem[];
+};
+
+type LocationState = {
+  result?: RecommendListResponse;
+};
 
 export default function RecommendResult() {
   const navigate = useNavigate();
+  const { state } = useLocation() as { state: LocationState | null };
+
+  const result = state?.result;
 
   const buttonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -21,6 +43,12 @@ export default function RecommendResult() {
     periods: [],
     maxMonthlyFee: 'all'
   });
+
+  useEffect(() => {
+    if (result) return;
+    window.alert('추천 결과를 다시 생성해 주세요.');
+    navigate('/insurance', { replace: true });
+  }, [result, navigate]);
 
   const chips = useMemo(() => {
     const items: string[] = [];
@@ -39,6 +67,30 @@ export default function RecommendResult() {
 
     return items;
   }, [filters]);
+
+  const filteredItems = useMemo(() => {
+    if (!result) return [];
+
+    return result.items.filter((item) => {
+      const matchInsurer =
+        filters.insurers.length === 0 ||
+        filters.insurers.includes(
+          item.insurance_company as FilterValue['insurers'][number]
+        );
+
+      const matchPeriod =
+        filters.periods.length === 0 ||
+        filters.periods.includes(item.is_long_term ? 'long' : 'short');
+
+      const matchMonthlyFee =
+        filters.maxMonthlyFee === 'all' ||
+        (typeof item.monthly_cost === 'string' &&
+          Number(item.monthly_cost.replaceAll(/[^0-9]/g, '')) <=
+            filters.maxMonthlyFee);
+
+      return matchInsurer && matchPeriod && matchMonthlyFee;
+    });
+  }, [result, filters]);
 
   const computeModalTop = () => {
     const el = buttonRef.current;
@@ -72,8 +124,13 @@ export default function RecommendResult() {
     };
   }, [isFilterOpen]);
 
-  const handleGoDetail = (itemId: string) =>
-    navigate(`/insurance/recommend/result/detail?itemId=${itemId}`);
+  const handleGoDetail = (itemId: string) => {
+    if (!result) return null;
+    navigate(
+      `/insurance/recommend/result/detail?resultId=${result.resultId}&itemId=${itemId}`
+    );
+  };
+  if (!result) return null;
 
   return (
     <>
@@ -114,19 +171,25 @@ export default function RecommendResult() {
 
       <div className="px-[1.7rem] py-3">
         <div className="mb-8 flex flex-col gap-4">
-          {recommendListDummy.items.map((item) => (
-            <InsuranceCard
-              key={item.itemId}
-              showForwardIcon
-              onClick={() => handleGoDetail(item.itemId)}
-              productName={item.product_name}
-              insuranceCompany={item.insurance_company}
-              isLongTerm={item.is_long_term}
-              sumInsured={item.sum_insured}
-              monthlyCost={item.monthly_cost}
-              specialContractCount={item.special_contract_count}
-            />
-          ))}
+          {filteredItems.length === 0 ? (
+            <div className="rounded-xl border border-gray-20 bg-white p-4 text-body-md text-gray-80">
+              조건에 맞는 보험 결과가 없습니다.
+            </div>
+          ) : (
+            filteredItems.map((item) => (
+              <InsuranceCard
+                key={item.itemId}
+                showForwardIcon
+                onClick={() => handleGoDetail(item.itemId)}
+                productName={item.product_name}
+                insuranceCompany={item.insurance_company}
+                isLongTerm={item.is_long_term}
+                sumInsured={item.sum_insured}
+                monthlyCost={item.monthly_cost}
+                specialContractCount={item.special_contract_count}
+              />
+            ))
+          )}
         </div>
       </div>
     </>

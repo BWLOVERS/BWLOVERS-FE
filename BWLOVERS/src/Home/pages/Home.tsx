@@ -12,6 +12,14 @@ import { useEffect, useState } from 'react';
 import DoubleBtnModal from '@/common/components/DoubleBtnModal';
 import { tokenStorage } from '@/apis/auth/tokenStorage';
 import { authApi } from '@/apis/auth/authApi';
+import {
+  insurancesApi,
+  type InsuranceListItem
+} from '@/apis/insurance/insurancesApi';
+import {
+  myreportApi,
+  type MyReportItemResponse
+} from '@/apis/insurance/myreportApi';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -19,10 +27,65 @@ export default function Home() {
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const { me, fetchMe, logout } = useUserAccountStore();
+  const [myInsurances, setMyInsurances] = useState<InsuranceListItem[]>([]);
+  const [isLoadingInsurances, setIsLoadingInsurances] = useState(false);
+  const [myReports, setMyReports] = useState<MyReportItemResponse[]>([]);
+  const [isLoadingMyReports, setIsLoadingMyReports] = useState(false);
+
+  useEffect(() => {
+    const fetchInsurances = async () => {
+      try {
+        setIsLoadingInsurances(true);
+        const list = await insurancesApi.getMyInsurances();
+
+        // 최신순 정렬 원하면
+        const sorted = [...list].sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        setMyInsurances(sorted);
+      } catch (e) {
+        console.error('getMyInsurances failed:', e);
+        window.alert(
+          '보험 리스트를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.'
+        );
+      } finally {
+        setIsLoadingInsurances(false);
+      }
+    };
+
+    fetchInsurances();
+  }, []);
 
   useEffect(() => {
     if (!me) fetchMe();
   }, [me, fetchMe]);
+
+  useEffect(() => {
+    const fetchMyReports = async () => {
+      try {
+        setIsLoadingMyReports(true);
+        const list = await myreportApi.getMyReports();
+
+        const sorted = [...list].sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        setMyReports(sorted);
+      } catch (e) {
+        console.error('getMySimulations failed:', e);
+        window.alert(
+          '시뮬레이션 리스트를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.'
+        );
+      } finally {
+        setIsLoadingMyReports(false);
+      }
+    };
+
+    fetchMyReports();
+  }, []);
 
   const username = me?.username;
   const profileImage = me?.profileImage ?? null;
@@ -57,25 +120,57 @@ export default function Home() {
             </div>
           </div>
           <div className="flex flex-row gap-[0.56rem] overflow-x-scroll">
-            <SavedInsurance />
-            <SavedInsurance />
-            <SavedInsurance />
-            <SavedInsurance />
-            <SavedInsurance />
+            {isLoadingInsurances ? (
+              <div className="text-body-sm text-gray-60">불러오는 중...</div>
+            ) : myInsurances.length === 0 ? (
+              <div className="text-body-sm text-gray-60">
+                저장한 보험이 없습니다.
+              </div>
+            ) : (
+              myInsurances.map((item) => (
+                <SavedInsurance
+                  key={item.insuranceId}
+                  insuranceId={item.insuranceId}
+                  insuranceCompany={item.insuranceCompany}
+                  productName={item.productName}
+                  createdAt={item.createdAt}
+                />
+              ))
+            )}
           </div>
         </div>
 
         <div className="mx-[1.81rem] mt-[2.44rem] flex flex-col gap-4.75">
-          <div className="text-heading-sm text-black">
-            저장한 보장 분석 리포트
+          <div className="flex flex-row items-center justify-between">
+            <div className="text-heading-sm text-black">
+              저장한 보장 분석 리포트
+            </div>
+            <div
+              onClick={() => navigate('/myreport')}
+              className="flex flex-row items-center rounded-full pl-2 text-body-xs text-gray-80 hover:bg-gray-10"
+            >
+              더보기
+              <ForwardIcon className="h-5 w-5" />
+            </div>
           </div>
           <div className="flex flex-row gap-[0.56rem] overflow-x-scroll">
-            <SavedReport />
-            <SavedReport />
-            <SavedReport />
-            <SavedReport />
-            <SavedReport />
-            <SavedReport />
+            {isLoadingMyReports ? (
+              <div className="text-body-sm text-gray-60">불러오는 중...</div>
+            ) : myReports.length === 0 ? (
+              <div className="text-body-sm text-gray-60">
+                저장한 시뮬레이션이 없습니다.
+              </div>
+            ) : (
+              myReports
+                .slice(0, 6)
+                .map((item) => (
+                  <SavedReport
+                    key={item.simulationId}
+                    simulationId={item.simulationId}
+                    createdAt={item.createdAt}
+                  />
+                ))
+            )}
           </div>
         </div>
 
