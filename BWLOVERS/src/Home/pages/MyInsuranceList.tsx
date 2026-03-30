@@ -87,8 +87,8 @@ export default function MyInsuranceList({
     // 연타/중복 요청 방지
     if (deletingIds.has(id)) return;
 
-    // const ok = window.confirm('해당 보험을 삭제하시겠습니까?');
-    // if (!ok) return;
+    const ok = window.confirm('해당 보험을 삭제하시겠습니까?');
+    if (!ok) return;
 
     setDeletingIds((prev) => new Set(prev).add(id));
 
@@ -188,9 +188,9 @@ export default function MyInsuranceList({
         )}
       </div>
 
-      {/* 선택 모드에서만 하단 '선택하기' 버튼 */}
+      {/* 선택 모드 하단 '선택하기' 버튼 */}
       {isSelectMode && (
-        <div className="fixed right-0 bottom-0 left-0 bg-white px-9 pt-3 pb-6">
+        <div className="fixed right-0 bottom-0 left-0 mx-auto max-w-120 bg-white px-9 pt-3 pb-6">
           <button
             type="button"
             className="text-body-bold-md w-full rounded-full bg-pink-60 py-4 font-bold text-black hover:bg-pink-80 disabled:bg-gray-20 disabled:text-gray-60"

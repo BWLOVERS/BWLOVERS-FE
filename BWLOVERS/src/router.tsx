@@ -21,6 +21,8 @@ import CoverageResult from './Insurance/pages/CoverageResult';
 import CoverageUpload from './Insurance/pages/CoverageUpload';
 import RecommendLoading from './Insurance/pages/RecommendLoading';
 import CoverageLoading from './Insurance/pages/CoverageLoading';
+import MyReportList from './Home/pages/MyReportList';
+import MyReportDetail from './Home/pages/MyReportDetail';
 const router = createBrowserRouter([
   {
     element: <MainLayout />,
@@ -35,6 +37,8 @@ const router = createBrowserRouter([
       { path: '/jobs', element: <JobSelect /> },
       { path: '/signup/health', element: <SignUpHealth /> },
       { path: '/home', element: <Home /> },
+      { path: '/myreport', element: <MyReportList /> },
+      { path: '/myreport/:simulationId', element: <MyReportDetail /> },
       { path: '/myinsurance', element: <MyInsuranceList /> },
       {
         path: '/myinsurance/select',

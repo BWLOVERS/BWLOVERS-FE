@@ -17,7 +17,13 @@ function SectionCard({
   );
 }
 
-export default function ExplainResult() {
+interface ExplainResultProps {
+  onClickExtractPdf: () => void;
+}
+
+export default function ExplainResult({
+  onClickExtractPdf
+}: ExplainResultProps) {
   const navigate = useNavigate();
   const location = useLocation() as { state?: { response?: OcrJobResponse } };
   const response = location.state?.response;
@@ -109,6 +115,15 @@ export default function ExplainResult() {
                 ))}
               </div>
             </SectionCard>
+            <div className="mt-5 flex flex-col gap-4">
+              <button
+                type="button"
+                onClick={onClickExtractPdf}
+                className="text-body-bold-md w-full rounded-full bg-pink-60 py-4 font-bold text-black shadow-[0_0_4px_0_rgba(0,0,0,0.20)] hover:bg-pink-80"
+              >
+                PDF로 내용 추출하기
+              </button>
+            </div>
           </>
         )}
       </div>

@@ -42,7 +42,8 @@ export default function CoverageLoading() {
         // 2) GET (폴링)
         let result: CoverageSimulateResultResponse | null = null;
 
-        for (let i = 0; i < 30; i += 1) {
+        for (let i = 0; i < 5; i++) {
+          //get i번 시도 반복
           try {
             const data = await coverageApi.getSimulationResult(start.resultId);
 

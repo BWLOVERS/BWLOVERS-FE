@@ -68,6 +68,30 @@ export default function RecommendResult() {
     return items;
   }, [filters]);
 
+  const filteredItems = useMemo(() => {
+    if (!result) return [];
+
+    return result.items.filter((item) => {
+      const matchInsurer =
+        filters.insurers.length === 0 ||
+        filters.insurers.includes(
+          item.insurance_company as FilterValue['insurers'][number]
+        );
+
+      const matchPeriod =
+        filters.periods.length === 0 ||
+        filters.periods.includes(item.is_long_term ? 'long' : 'short');
+
+      const matchMonthlyFee =
+        filters.maxMonthlyFee === 'all' ||
+        (typeof item.monthly_cost === 'string' &&
+          Number(item.monthly_cost.replaceAll(/[^0-9]/g, '')) <=
+            filters.maxMonthlyFee);
+
+      return matchInsurer && matchPeriod && matchMonthlyFee;
+    });
+  }, [result, filters]);
+
   const computeModalTop = () => {
     const el = buttonRef.current;
     if (!el) return 0;
@@ -147,19 +171,25 @@ export default function RecommendResult() {
 
       <div className="px-[1.7rem] py-3">
         <div className="mb-8 flex flex-col gap-4">
-          {result.items.map((item) => (
-            <InsuranceCard
-              key={item.itemId}
-              showForwardIcon
-              onClick={() => handleGoDetail(item.itemId)}
-              productName={item.product_name}
-              insuranceCompany={item.insurance_company}
-              isLongTerm={item.is_long_term}
-              sumInsured={item.sum_insured}
-              monthlyCost={item.monthly_cost}
-              specialContractCount={item.special_contract_count}
-            />
-          ))}
+          {filteredItems.length === 0 ? (
+            <div className="rounded-xl border border-gray-20 bg-white p-4 text-body-md text-gray-80">
+              조건에 맞는 보험 결과가 없습니다.
+            </div>
+          ) : (
+            filteredItems.map((item) => (
+              <InsuranceCard
+                key={item.itemId}
+                showForwardIcon
+                onClick={() => handleGoDetail(item.itemId)}
+                productName={item.product_name}
+                insuranceCompany={item.insurance_company}
+                isLongTerm={item.is_long_term}
+                sumInsured={item.sum_insured}
+                monthlyCost={item.monthly_cost}
+                specialContractCount={item.special_contract_count}
+              />
+            ))
+          )}
         </div>
       </div>
     </>

@@ -168,7 +168,7 @@ export default function InsuranceCard({
                     className="flex items-center justify-center"
                     aria-label="more menu"
                   >
-                    <MoreIcon className="mt-1 h-5 w-5" />
+                    <MoreIcon className="mt-1 h-5 w-5 rounded-full hover:bg-pink-60" />
                   </button>
 
                   {isMenuOpen && (
