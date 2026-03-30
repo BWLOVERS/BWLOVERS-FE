@@ -18,7 +18,7 @@ function SectionCard({
 }
 
 interface ExplainResultProps {
-  onClickExtractPdf: () => void;
+  onClickExtractPdf?: () => void;
 }
 
 export default function ExplainResult({
