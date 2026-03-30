@@ -50,10 +50,6 @@ export default function RecommendLoading() {
     };
 
     run();
-
-    return () => {
-      cancelled = true;
-    };
   }, [navigate]);
 
   return <Loading />;
