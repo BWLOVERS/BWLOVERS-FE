@@ -53,7 +53,7 @@ export const insuranceMap: Record<string, InsuranceInfo> = {
   },
   교보생명: {
     logo: KyoboLogo,
-    url: 'https://www.kyobo.co.kr'
+    url: 'https://www.kyobo.com'
   }
 
   // 예비
