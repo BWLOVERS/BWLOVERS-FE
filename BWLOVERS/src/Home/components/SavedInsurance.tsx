@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   defaultInsuranceLogo,
-  insuranceLogoMap
-} from '@/common/constants/insuranceLogoMap';
+  insuranceMap
+} from '@/common/constants/insuranceMap';
 
 type SavedInsuranceProps = {
   insuranceId: number;
@@ -29,26 +29,30 @@ export default function SavedInsurance({
   const navigate = useNavigate();
 
   const logoSrc = useMemo(() => {
-    const exact = insuranceLogoMap[insuranceCompany];
-    if (exact) return exact;
+    const exact = insuranceMap[insuranceCompany];
+    if (exact) return exact.logo;
 
-    const foundKey = Object.keys(insuranceLogoMap).find((key) =>
+    const foundKey = Object.keys(insuranceMap).find((key) =>
       insuranceCompany.includes(key)
     );
-    if (foundKey) return insuranceLogoMap[foundKey];
+    if (foundKey) return insuranceMap[foundKey].logo;
 
     return defaultInsuranceLogo;
   }, [insuranceCompany]);
 
+  function handleNavigate() {
+    navigate(`/myinsurance/detail/${insuranceId}`);
+  }
+
   return (
     <div
-      onClick={() => navigate(`/myinsurance/detail/${insuranceId}`)}
-      className="flex h-26.25 w-26.5 shrink-0 flex-col gap-[1.19rem] rounded-20 bg-pink-40 p-2.5 hover:bg-pink-60"
+      onClick={handleNavigate}
+      className="flex h-26.25 w-26.5 shrink-0 cursor-pointer flex-col gap-[1.19rem] rounded-20 bg-pink-40 p-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:bg-pink-60 hover:shadow-md active:scale-95 active:shadow-inner"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
-          navigate(`/myinsurance/detail/${insuranceId}`);
+          handleNavigate();
         }
       }}
     >

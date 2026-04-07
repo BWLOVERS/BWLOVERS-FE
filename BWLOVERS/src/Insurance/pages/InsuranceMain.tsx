@@ -15,7 +15,7 @@ const INSURANCE_TABS: readonly {
   label: string;
 }[] = [
   { key: 'recommendation', label: '보험 추천' },
-  { key: 'coverage', label: '보장 분석' },
+  { key: 'coverage', label: '보험 시뮬레이션' },
   { key: 'explain', label: '보험 이해' }
 ] as const;
 
