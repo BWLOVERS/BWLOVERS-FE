@@ -52,26 +52,26 @@ export default function CoverageUpload() {
   const handleSubmit = () => {
     if (!selectedInsurance) return;
 
-    // ✅ 이름 -> id 변환 (API에 보낼 건 id)
+    // 이름 -> id 변환 (API에 보낼 건 id)
     const selectedContractIds = (selectedInsurance.specialContracts ?? [])
       .filter((c) => simSelectedContracts.includes(c.contractName))
       .map((c) => c.contractId);
 
     const payload = {
       insuranceId: selectedInsurance.insuranceId,
-      selectedContractIds, // ✅ number[]
+      selectedContractIds, //  number[]
       selectedContractNames: simSelectedContracts, // (Result 카드 표시용으로만)
-      question: situation // ✅ API 필드명 question
+      question: situation //  API 필드명 question
     };
 
-    // ✅ Loading으로 이동 (Loading에서 POST→GET 후 Result 이동)
+    //  Loading으로 이동 (Loading에서 POST→GET 후 Result 이동)
     navigate('/insurance/coverage/loading', { state: payload });
   };
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
       <div className="sticky top-0 z-50 bg-white">
-        <Header title="보장 분석" onBack={() => navigate('/insurance')} />
+        <Header title="보장 시뮬레이션" onBack={() => navigate('/insurance')} />
       </div>
       <div className="flex flex-1 flex-col gap-10 px-9 py-8">
         <div className="flex flex-col gap-3">
@@ -93,7 +93,7 @@ export default function CoverageUpload() {
                 <LoadIcon />
                 내가 저장한 보험 불러오기
               </button>
-              <div className="flex items-center justify-center gap-2 text-caption-md text-gray-60">
+              <div className="flex items-center justify-center gap-2 text-caption-xs text-gray-60">
                 <InfoIcon className="h-3 w-3" />
                 내가 저장한 보험 중 하나를 골라 시뮬레이션 결과를 확인할 수
                 있습니다.
@@ -148,8 +148,10 @@ export default function CoverageUpload() {
             2. 시뮬레이션 상황 입력
           </div>
           <textarea
-            className="h-80 w-full resize-none rounded-20 bg-gray-10 p-4"
-            placeholder="보장 여부를 확인하고 싶은 상황을 상세하게 입력해주세요. "
+            className="h-80 w-full resize-none rounded-20 bg-gray-10 p-4 placeholder:text-body-sm"
+            placeholder={
+              '보장 여부를 확인하고 싶은 상황을 \n상세하게 입력해주세요. '
+            }
             value={situation}
             onChange={(e) => setSituation(e.target.value)}
           />

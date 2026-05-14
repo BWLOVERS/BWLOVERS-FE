@@ -121,7 +121,10 @@ export default function CoverageResult() {
     return (
       <div className="flex min-h-screen flex-col bg-white">
         <div className="sticky top-0 z-50 bg-white">
-          <Header title="보장 분석" onBack={() => navigate('/insurance')} />
+          <Header
+            title="보장 시뮬레이션"
+            onBack={() => navigate('/insurance')}
+          />
         </div>
         <div className="flex flex-1 items-center justify-center px-9 py-8">
           <div className="text-body-md text-gray-80">결과 불러오는 중...</div>

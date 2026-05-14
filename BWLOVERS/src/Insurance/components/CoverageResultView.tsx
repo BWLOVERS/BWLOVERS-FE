@@ -75,7 +75,7 @@ export default function CoverageResultView(props: Props) {
   return (
     <div className="flex min-h-screen flex-col bg-white">
       <div className="sticky top-0 z-50 bg-white">
-        <Header title="보장 분석" onBack={onBack} />
+        <Header title="보장 시뮬레이션" onBack={onBack} />
       </div>
 
       <div className="flex flex-1 flex-col gap-10 px-9 py-8">
