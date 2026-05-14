@@ -38,8 +38,9 @@ export default function AboutUs() {
           보험사에서 직접 확인하시기를 바랍니다.
         </div>
 
-        <div className="text-body-bold-md mt-8 mb-4 text-center text-black">
-          보험사 카드를 누르면 해당 보험사 메인 홈페이지로 이동합니다.
+        <div className="text-body-bold-sm mt-8 mb-4 text-center text-black">
+          보험사 카드를 누르면 <br />
+          해당 보험사 메인 홈페이지로 이동합니다.
         </div>
 
         {/* 카드 리스트 */}

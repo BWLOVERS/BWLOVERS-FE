@@ -1,4 +1,4 @@
-import WaveBackground from '@/assets/Insurance/bg_wave_wide.svg?react';
+import WaveBackground from '@/assets/Insurance/bg_linear.svg?react';
 import NextIcon from '@/assets/Insurance/icon_arrow_next.svg?react';
 import { useNavigate } from 'react-router-dom';
 

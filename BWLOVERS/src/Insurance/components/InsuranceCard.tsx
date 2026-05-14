@@ -194,8 +194,8 @@ export default function InsuranceCard({
 
           <div className="flex flex-row justify-between">
             <div className="mt-[2.06rem] flex flex-col">
-              <div className="flex flex-col gap-2 text-body-sm text-black">
-                <div className="flex flex-row gap-3">
+              <div className="flex flex-col gap-2 text-body-xs text-black">
+                <div className="flex flex-row gap-3 text-body-sm">
                   <p className="">{insuranceCompany}</p>
                   {specialContractCount && (
                     <p className="border-l-[1.6px] border-gray-60 pl-3">
@@ -204,11 +204,19 @@ export default function InsuranceCard({
                   )}
                 </div>
 
-                <p>보험 가입 금액: {sumInsured.toLocaleString()}원</p>
-                <p>월 예상 보험료: {monthlyCost}</p>
+                <p>
+                  보험 가입 금액:{' '}
+                  <span className="font-bold">
+                    {sumInsured.toLocaleString()}원
+                  </span>
+                </p>
+                <p>
+                  월 예상 보험료:{' '}
+                  <span className="font-bold">{monthlyCost}</span>
+                </p>
 
                 {createdAt && (
-                  <p className="text-body-sm text-gray-60">
+                  <p className="text-body-xs text-gray-60">
                     저장일: {createdAt.slice(0, 10).replaceAll('-', '.')}
                   </p>
                 )}
@@ -220,7 +228,7 @@ export default function InsuranceCard({
                 <div className="text-body-bold-sm flex shrink-0 justify-end">
                   메모
                 </div>
-                <div className="mt-2 w-37 rounded-[10px] bg-white p-3 text-body-sm">
+                <div className="mt-2 w-26 rounded-[10px] bg-white p-2 text-body-sm">
                   {memo}
                 </div>
               </div>

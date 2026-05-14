@@ -46,7 +46,7 @@ export default function MyReportList() {
     try {
       await myreportApi.deleteMyReport(simulationId);
 
-      // ✅ UI 즉시 반영
+      // UI 즉시 반영
       setReports((prev) => prev.filter((r) => r.simulationId !== simulationId));
     } catch (e) {
       console.error('deleteMyReport failed:', e);

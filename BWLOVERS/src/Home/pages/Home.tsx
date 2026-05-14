@@ -121,9 +121,11 @@ export default function Home() {
           </div>
           <div className="flex flex-row gap-[0.56rem] overflow-x-scroll">
             {isLoadingInsurances ? (
-              <div className="text-body-sm text-gray-60">불러오는 중...</div>
+              <div className="flex w-full rounded-lg bg-gray-10 p-5 text-body-sm text-gray-60">
+                불러오는 중...
+              </div>
             ) : myInsurances.length === 0 ? (
-              <div className="text-body-sm text-gray-60">
+              <div className="flex w-full rounded-lg bg-gray-10 p-5 text-body-sm text-gray-60">
                 저장한 보험이 없습니다.
               </div>
             ) : (
@@ -155,9 +157,11 @@ export default function Home() {
           </div>
           <div className="flex flex-row gap-[0.56rem] overflow-x-scroll">
             {isLoadingMyReports ? (
-              <div className="text-body-sm text-gray-60">불러오는 중...</div>
+              <div className="flex w-full rounded-lg bg-gray-10 p-5 text-body-sm text-gray-60">
+                불러오는 중...
+              </div>
             ) : myReports.length === 0 ? (
-              <div className="text-body-sm text-gray-60">
+              <div className="flex w-full rounded-lg bg-gray-10 p-5 text-body-sm text-gray-60">
                 저장한 시뮬레이션이 없습니다.
               </div>
             ) : (
