@@ -95,7 +95,7 @@ export default function ReportItem({
         </div>
       </div>
 
-      <div className="truncate text-body-md text-black">{productName}</div>
+      <div className="truncate text-body-sm text-black">{productName}</div>
     </div>
   );
 }

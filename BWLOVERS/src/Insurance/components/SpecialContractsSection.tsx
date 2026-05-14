@@ -61,14 +61,15 @@ export default function SpecialContractsSection({
           <InfoIcon />
           나만의 조합 저장하기 기능이란?
         </div>
-        <div className="text-caption-md text-gray-60">
+        <div className="text-caption-sm text-gray-60">
           AI가 추천해준 특약 중 일부만 선택하여 마이페이지에 저장하는
           기능입니다.
           <br />
           저장된 조합은 보장 시뮬레이션(보장분석) 기능에서 불러와 사용할 수
           있고, 보장 분석 기능에서는 저장 시 선택한 항목 내에서 다시 한 번
           선택할 수 있습니다.
-          <br /> ※ 지금 저장하지 않은 결과는 추후 AI 추천 시엔 동일하게 나타나지
+          <br />
+          <br /> ※ 지금 저장하지 않은 결과는 추후 AI 추천 시 동일하게 나타나지
           않을 수 있습니다.
         </div>
       </div>
