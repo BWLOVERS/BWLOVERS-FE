@@ -31,7 +31,7 @@ export default function EducationTab() {
               <br />
               문서를 잘 인식할 수 있는 환경에서 사용해주세요.
               <br />
-              2. 최대 10장까지 업로드 가능합니다.
+              2. 최대 5장까지 업로드 가능합니다.
             </div>
           </div>
           <button
