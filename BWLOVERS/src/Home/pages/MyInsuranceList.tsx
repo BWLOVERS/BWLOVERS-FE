@@ -12,7 +12,7 @@ type SavedInsuranceItem = {
   insuranceId: number;
   insuranceCompany: string;
   productName: string;
-  sumInsured: number;
+  sumInsured: string;
   monthlyCost?: string;
   memo?: string;
   createdAt: string;

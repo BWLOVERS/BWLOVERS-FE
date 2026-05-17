@@ -13,7 +13,7 @@ export type RecommendListResponse = {
     insurance_company: string;
     product_name: string;
     is_long_term: boolean;
-    sum_insured: number;
+    sum_insured: string;
     monthly_cost?: string;
     insurance_recommendation_reason: string;
     special_contracts: Array<{
@@ -37,7 +37,7 @@ export type RecommendDetailResponse = {
   is_long_term: boolean;
   product_name: string;
   insurance_recommendation_reason: string;
-  sum_insured: number;
+  sum_insured: string;
   monthly_cost?: string;
   special_contracts: Array<{
     contract_name: string;

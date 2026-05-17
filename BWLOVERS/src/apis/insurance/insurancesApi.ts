@@ -11,7 +11,7 @@ export type InsuranceDetailListItem = {
   insuranceId: number;
   insuranceCompany: string;
   productName: string;
-  sumInsured: number;
+  sumInsured: string;
   monthlyCost?: string;
   memo?: string;
   createdAt: string;
@@ -25,7 +25,7 @@ export type InsuranceDetailResponse = {
   itemId: string;
   insuranceCompany: string;
   productName: string;
-  sumInsured: number;
+  sumInsured: string;
   monthlyCost?: string;
   insuranceRecommendationReason: string;
   memo?: string;

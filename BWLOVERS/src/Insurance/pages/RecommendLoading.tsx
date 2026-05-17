@@ -18,7 +18,7 @@ export default function RecommendLoading() {
       try {
         const startRes = await recommendApi.postRecommend();
         const { resultId } = startRes;
-        const MAX_TRY = 30;
+        const MAX_TRY = 80;
         const INTERVAL_MS = 1000;
 
         for (let i = 0; i < MAX_TRY; i += 1) {
@@ -38,9 +38,11 @@ export default function RecommendLoading() {
         }
 
         // 제한 시간 초과
+        console.log('시간초과');
         window.alert('추천 생성 시간이 초과되었습니다. 다시 시도해 주세요.');
         navigate('/insurance', { replace: true });
       } catch (e) {
+        console.log('시스템오류');
         console.error(e);
         window.alert('시스템 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
         navigate('/insurance', { replace: true });

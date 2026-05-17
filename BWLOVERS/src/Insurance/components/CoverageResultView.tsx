@@ -9,7 +9,7 @@ type InsuranceCardData = {
   productName: string;
   insuranceCompany: string;
   longTerm: boolean;
-  sumInsured: number;
+  sumInsured: string;
   monthlyCost?: string;
   memo?: string;
   createdAt?: string;
