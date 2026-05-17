@@ -22,7 +22,7 @@ type SavedInsuranceDetail = {
   insurance_company: string;
   product_name: string;
   is_long_term: boolean;
-  sum_insured: number;
+  sum_insured: string;
   monthly_cost?: string;
   special_contracts: SpecialContract[];
   insurance_recommendation_reason: string;

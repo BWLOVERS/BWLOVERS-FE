@@ -17,7 +17,7 @@ export type MyReportDetailResponse = {
   insuranceCompany: string;
   productName: string;
   longTerm: boolean;
-  sumInsured: number;
+  sumInsured: string;
   monthlyCost: string;
   memo: string;
   question: string;
