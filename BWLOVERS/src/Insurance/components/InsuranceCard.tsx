@@ -11,7 +11,7 @@ type InsuranceCardProps = {
   productName?: string;
   insuranceCompany?: string;
   isLongTerm?: boolean;
-  sumInsured: number;
+  sumInsured: string;
   monthlyCost?: string;
   specialContractCount?: number;
   memo?: string;
@@ -206,9 +206,7 @@ export default function InsuranceCard({
 
                 <p>
                   보험 가입 금액:{' '}
-                  <span className="font-bold">
-                    {sumInsured.toLocaleString()}원
-                  </span>
+                  <span className="font-bold">{sumInsured}</span>
                 </p>
                 <p>
                   월 예상 보험료:{' '}
