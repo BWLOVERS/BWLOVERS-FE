@@ -11,6 +11,7 @@
 
 ---
 <br/>
+
 # SOURCE CODE 설명
 ## 프로젝트 구조
 
@@ -213,6 +214,10 @@ yarn build
 - 네이버 로그인 후 콜백 오류가 나면 `.env.local`의 `VITE_REDIRECT_URI`와 네이버 Developers 콘솔의 Redirect URI가 같은지 확인합니다.
 - API 요청이 401로 반복 실패하면 브라우저 `localStorage`의 `accessToken`, `refreshToken`을 삭제하고 다시 로그인합니다.
 - 쿠키 또는 인증 연동 문제가 있으면 백엔드 CORS 설정에서 프론트엔드 Origin과 credentials 허용 여부를 확인합니다.
+
+
+<br/>
+<br/>
 
 # Author
 <img width="180" height="180" alt="image" src="https://github.com/user-attachments/assets/ca0d1a75-0755-4a84-ab11-7d33647262f6" />
