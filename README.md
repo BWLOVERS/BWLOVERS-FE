@@ -1,3 +1,18 @@
+<details>
+  <summary>포스터 및 데모 영상 보러가기</summary>
+   
+   **데모**
+  https://ring-custard-769.notion.site/bebesure?source=copy_link
+   
+   <img width="2245" height="3179" alt="image" src="https://github.com/user-attachments/assets/10140bbe-91cb-4e24-b2d1-235f5e8d029a" />
+
+  
+</details>
+<br/>
+
+
+
+
 <img width="214" height="50" alt="title 로고" src="https://github.com/user-attachments/assets/186ad803-09ee-47ae-8857-557a7dde444e" />
 <img width="2031" height="1142" alt="image" src="https://github.com/user-attachments/assets/00bf4993-879c-4189-b426-670221383da1" />
 
@@ -6,6 +21,9 @@
 ## 🔗 Deployment
 
 [베베슈어](https://bebesure.vercel.app)
+(26.08.05 서비스 중지)
+
+
 
 <br/>
 
